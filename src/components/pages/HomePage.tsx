@@ -1,10 +1,19 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 
+import { ProjectList } from "../organisms/ProjectList";
+
+/**
+ * ホーム画面を表示する.
+ *
+ * Returns:
+ *   JSX.Element:
+ *     ホーム画面.
+ */
 export const HomePage = () => {
   return (
-    <Box p={8}>
-      <Heading>ホーム</Heading>
-      <Text mt={4}>プロジェクト一覧を表示します。</Text>
+    <Box>
+      <Heading mb={6}>プロジェクト一覧</Heading>
+      <ProjectList />
     </Box>
   );
 };
