@@ -7,6 +7,7 @@ import { TaskColumn as TaskColumnView } from "./TaskColumn";
 type Props = {
   columns: TaskColumn[];
   tasks: Task[];
+  onClickCreateTask: (column: TaskColumn) => void;
 };
 
 /**
@@ -17,12 +18,14 @@ type Props = {
  *     タスクカラム一覧.
  *   tasks:
  *     タスク一覧.
+ *   onClickCreateTask:
+ *     タスク作成ボタン押下時の処理.
  *
  * Returns:
  *   JSX.Element:
  *     タスクボード.
  */
-export const TaskBoard = ({ columns, tasks }: Props) => {
+export const TaskBoard = ({ columns, tasks, onClickCreateTask }: Props) => {
   if (columns.length === 0) {
     return <Text color="gray.500">タスクカラムがありません.</Text>;
   }
@@ -41,7 +44,12 @@ export const TaskBoard = ({ columns, tasks }: Props) => {
         );
 
         return (
-          <TaskColumnView key={column.id} column={column} tasks={columnTasks} />
+          <TaskColumnView
+            key={column.id}
+            column={column}
+            tasks={columnTasks}
+            onClickCreateTask={onClickCreateTask}
+          />
         );
       })}
     </Grid>

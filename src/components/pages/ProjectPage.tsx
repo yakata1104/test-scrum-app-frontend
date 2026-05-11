@@ -1,7 +1,16 @@
-import { Box, Heading, Spinner, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Dialog,
+  Heading,
+  Portal,
+  Spinner,
+  Text,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { TaskCreateForm } from "../molecules/TaskCreateForm";
 import { TaskBoard } from "../organisms/TaskBoard";
 import { fetchTaskColumns, fetchTasks } from "../../services/taskService";
 import type { Task } from "../../types/task";
@@ -21,6 +30,31 @@ export const ProjectPage = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
+
+  /**
+   * タスクボード表示に必要なデータを再読み込みする.
+   */
+  const reloadTaskBoard = async (): Promise<void> => {
+    if (!projectId) {
+      setErrorMessage("プロジェクトIDが取得できません.");
+      return;
+    }
+
+    try {
+      const [fetchedColumns, fetchedTasks] = await Promise.all([
+        fetchTaskColumns(projectId),
+        fetchTasks(projectId),
+      ]);
+
+      setColumns(fetchedColumns);
+      setTasks(fetchedTasks);
+      setErrorMessage("");
+    } catch {
+      setErrorMessage("タスクボードの取得に失敗しました.");
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -71,10 +105,65 @@ export const ProjectPage = () => {
     return <Text color="red.500">{errorMessage}</Text>;
   }
 
+  if (!projectId) {
+    return <Text color="red.500">プロジェクトIDが取得できません.</Text>;
+  }
+
   return (
     <Box>
-      <Heading mb={6}>タスクボード</Heading>
-      <TaskBoard columns={columns} tasks={tasks} />
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={6}
+      >
+        <Heading>タスクボード</Heading>
+      </Box>
+
+      <TaskBoard
+        columns={columns}
+        tasks={tasks}
+        onClickCreateTask={(column) => {
+          setSelectedColumn(column);
+          setIsCreateDialogOpen(true);
+        }}
+      />
+
+      <Dialog.Root
+        open={isCreateDialogOpen}
+        onOpenChange={(event) => setIsCreateDialogOpen(event.open)}
+      >
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>
+                  タスク作成
+                  {selectedColumn ? ` - ${selectedColumn.name}` : ""}
+                </Dialog.Title>
+              </Dialog.Header>
+
+              <Dialog.Body>
+                <TaskCreateForm
+                  projectId={projectId}
+                  onCreated={reloadTaskBoard}
+                  onClose={() => {
+                    setIsCreateDialogOpen(false);
+                    setSelectedColumn(null);
+                  }}
+                />
+              </Dialog.Body>
+
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button variant="outline">キャンセル</Button>
+                </Dialog.ActionTrigger>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 };

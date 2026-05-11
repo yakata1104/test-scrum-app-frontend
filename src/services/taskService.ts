@@ -52,3 +52,41 @@ export const fetchTasks = async (projectId: string): Promise<Task[]> => {
 
   return response.data;
 };
+
+type CreateTaskParams = {
+  projectId: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+};
+
+/**
+ * タスクを作成する.
+ *
+ * Args:
+ *   params:
+ *     タスク作成パラメータ.
+ *
+ * Returns:
+ *   Promise<Task>:
+ *     作成したタスク.
+ */
+export const createTask = async (params: CreateTaskParams): Promise<Task> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await client.post<Task>(
+    `/projects/${params.projectId}/tasks`,
+    {
+      title: params.title,
+      description: params.description,
+      due_date: params.due_date,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  return response.data;
+};
