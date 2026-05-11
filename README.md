@@ -1,73 +1,76 @@
-# React + TypeScript + Vite
+# scrum-frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+スクラム開発支援アプリのフロントエンドアプリケーション。(自己学習用)
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+# 使用技術
 
-## React Compiler
+- React
+- TypeScript
+- Vite
+- Chakra UI
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+# フォルダ構成
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+````text
+scrum-frontend/
+├── public/                     # 静的ファイル
+├── src/
+│   ├── api/                    # API通信設定
+│   ├── assets/                 # 画像・アイコンなど静的リソース
+│   ├── components/
+│   │   ├── atoms/              # 最小単位のUIコンポーネント
+│   │   ├── molecules/          # atomsを組み合わせた小規模UI
+│   │   ├── organisms/          # 機能単位のUIブロック
+│   │   ├── templates/          # レイアウトテンプレート
+│   │   └── pages/              # ページ単位のコンポーネント
+│   ├── hooks/                  # カスタムhooks
+│   ├── layouts/                # 共通レイアウト
+│   ├── providers/              # Context Provider
+│   ├── routes/                 # React Router定義
+│   ├── services/               # API呼び出し処理
+│   ├── styles/                 # themeやグローバルスタイル
+│   ├── types/                  # TypeScript型定義
+│   ├── utils/                  # 共通関数
+│   ├── App.tsx                 # アプリケーションルート
+│   └── main.tsx                # エントリポイント
+├── .env
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package.json
+├── tsconfig.json
+├── vite.config.ts
+└── README.md
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# セットアップ
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 1. パッケージインストール
+
+### 初回構築
+```bash
+npm ci
+````
+
+### 依存追加時
+
+```bash
+npm install <package>
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 2. 開発サーバ起動
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+npm run dev
+```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 2. build
+
+```bash
+npm run build
 ```
