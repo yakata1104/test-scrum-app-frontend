@@ -1,9 +1,38 @@
-import { Button, Field, Input, Stack } from "@chakra-ui/react";
+import { Button, Field, Input, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import { login } from "../../services/authService";
 
 export const LoginForm = () => {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    setErrorMessage("");
+    setIsLoading(true);
+
+    try {
+      const loginResponse = await login({
+        email,
+        password,
+      });
+
+      localStorage.setItem("accessToken", loginResponse.access_token);
+      localStorage.setItem("refreshToken", loginResponse.refresh_token);
+
+      navigate("/home");
+    } catch {
+      setErrorMessage("メールアドレスまたはパスワードが正しくありません。");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Stack gap={4}>
@@ -27,7 +56,11 @@ export const LoginForm = () => {
         />
       </Field.Root>
 
-      <Button colorPalette="blue">ログイン</Button>
+      {errorMessage && <Text color="red.500">{errorMessage}</Text>}
+
+      <Button colorPalette="blue" loading={isLoading} onClick={handleLogin}>
+        ログイン
+      </Button>
     </Stack>
   );
 };
