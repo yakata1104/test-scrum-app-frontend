@@ -12,9 +12,13 @@ import { useParams } from "react-router-dom";
 
 import { TaskCreateForm } from "../molecules/TaskCreateForm";
 import { TaskBoard } from "../organisms/TaskBoard";
-import { fetchTaskColumns, fetchTasks } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import type { TaskColumn } from "../../types/taskColumn";
+import {
+  fetchTaskColumns,
+  fetchTasks,
+  moveTaskColumn,
+} from "../../services/taskService";
 
 /**
  * プロジェクト画面を表示する.
@@ -53,6 +57,31 @@ export const ProjectPage = () => {
       setErrorMessage("");
     } catch {
       setErrorMessage("タスクボードの取得に失敗しました.");
+    }
+  };
+
+  /**
+   * タスクを別カラムへ移動する.
+   *
+   * Args:
+   *   taskId:
+   *     移動対象のタスクID.
+   *   columnId:
+   *     移動先のタスクカラムID.
+   */
+  const handleMoveTask = async (
+    taskId: string,
+    columnId: string,
+  ): Promise<void> => {
+    try {
+      await moveTaskColumn({
+        taskId,
+        columnId,
+      });
+
+      await reloadTaskBoard();
+    } catch {
+      setErrorMessage("タスクの移動に失敗しました.");
     }
   };
 
@@ -119,7 +148,6 @@ export const ProjectPage = () => {
       >
         <Heading>タスクボード</Heading>
       </Box>
-
       <TaskBoard
         columns={columns}
         tasks={tasks}
@@ -127,6 +155,7 @@ export const ProjectPage = () => {
           setSelectedColumn(column);
           setIsCreateDialogOpen(true);
         }}
+        onMoveTask={handleMoveTask}
       />
 
       <Dialog.Root

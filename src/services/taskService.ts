@@ -90,3 +90,39 @@ export const createTask = async (params: CreateTaskParams): Promise<Task> => {
 
   return response.data;
 };
+
+type MoveTaskColumnParams = {
+  taskId: string;
+  columnId: string;
+};
+
+/**
+ * タスクを別カラムへ移動する.
+ *
+ * Args:
+ *   params:
+ *     タスク移動パラメータ.
+ *
+ * Returns:
+ *   Promise<Task>:
+ *     移動後のタスク.
+ */
+export const moveTaskColumn = async (
+  params: MoveTaskColumnParams,
+): Promise<Task> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await client.patch<Task>(
+    `/tasks/${params.taskId}/column`,
+    {
+      column_id: params.columnId,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  return response.data;
+};

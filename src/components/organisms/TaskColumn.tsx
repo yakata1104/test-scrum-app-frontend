@@ -6,8 +6,10 @@ import { TaskCard } from "./TaskCard";
 
 type Props = {
   column: TaskColumnType;
+  columns: TaskColumnType[];
   tasks: Task[];
   onClickCreateTask: (column: TaskColumnType) => void;
+  onMoveTask: (taskId: string, columnId: string) => Promise<void>;
 };
 
 /**
@@ -16,16 +18,26 @@ type Props = {
  * Args:
  *   column:
  *     表示対象のタスクカラム.
+ *   columns:
+ *     移動先候補を含むタスクカラム一覧.
  *   tasks:
  *     カラム内に表示するタスク一覧.
  *   onClickCreateTask:
  *     タスク作成ボタン押下時の処理.
+ *   onMoveTask:
+ *     タスク移動時に実行する処理.
  *
  * Returns:
  *   JSX.Element:
  *     タスクカラム.
  */
-export const TaskColumn = ({ column, tasks, onClickCreateTask }: Props) => {
+export const TaskColumn = ({
+  column,
+  columns,
+  tasks,
+  onClickCreateTask,
+  onMoveTask,
+}: Props) => {
   return (
     <Box bg="gray.50" borderRadius="lg" minW="280px" p={4}>
       <Heading size="sm" mb={3}>
@@ -50,7 +62,12 @@ export const TaskColumn = ({ column, tasks, onClickCreateTask }: Props) => {
       ) : (
         <Stack gap={3}>
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard
+              key={task.id}
+              task={task}
+              columns={columns}
+              onMoveTask={onMoveTask}
+            />
           ))}
         </Stack>
       )}
