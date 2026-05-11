@@ -2,10 +2,12 @@ import { Button, Field, Input, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { login } from "../../services/authService";
+import { useAuth } from "../../providers/AuthProvider";
+import { login as loginApi } from "../../services/authService";
 
 export const LoginForm = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,13 +20,12 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const loginResponse = await login({
+      const loginResponse = await loginApi({
         email,
         password,
       });
 
-      localStorage.setItem("accessToken", loginResponse.access_token);
-      localStorage.setItem("refreshToken", loginResponse.refresh_token);
+      login(loginResponse.access_token, loginResponse.refresh_token);
 
       navigate("/home");
     } catch {
