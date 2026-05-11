@@ -1,10 +1,12 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
+
+import { LoginForm } from "../molecules/LoginForm";
 
 export const LoginPage = () => {
   return (
-    <Box p={8}>
-      <Heading>ログイン</Heading>
-      <Text mt={4}>ログイン画面です。</Text>
+    <Box maxW="md" mx="auto" mt={16} p={8}>
+      <Heading mb={6}>ログイン</Heading>
+      <LoginForm />
     </Box>
   );
 };
