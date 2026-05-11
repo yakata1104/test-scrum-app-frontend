@@ -1,6 +1,11 @@
 import { client } from "../api/client";
 import type { Project } from "../types/project";
 
+type CreateProjectParams = {
+  name: string;
+  description: string | null;
+};
+
 /**
  * プロジェクト一覧を取得する.
  *
@@ -12,6 +17,31 @@ export const fetchProjects = async (): Promise<Project[]> => {
   const accessToken = localStorage.getItem("accessToken");
 
   const response = await client.get<Project[]>("/projects", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};
+
+/**
+ * プロジェクトを作成する.
+ *
+ * Args:
+ *   params:
+ *     プロジェクト作成パラメータ.
+ *
+ * Returns:
+ *   Promise<Project>:
+ *     作成したプロジェクト.
+ */
+export const createProject = async (
+  params: CreateProjectParams,
+): Promise<Project> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await client.post<Project>("/projects", params, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
