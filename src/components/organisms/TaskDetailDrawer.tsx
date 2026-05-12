@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
+import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
 
 type Props = {
   task: Task | null;
@@ -53,6 +54,7 @@ export const TaskDetailDrawer = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   /**
    * 編集モードを開始する.
@@ -135,147 +137,159 @@ export const TaskDetailDrawer = ({
   };
 
   return (
-    <Drawer.Root
-      open={open}
-      onOpenChange={(event) => !event.open && handleClose()}
-    >
-      <Portal>
-        <Drawer.Backdrop />
-        <Drawer.Positioner>
-          <Drawer.Content>
-            <Drawer.Header>
-              <Drawer.Title>タスク詳細</Drawer.Title>
+    <>
+      <Drawer.Root
+        open={open}
+        onOpenChange={(event) => !event.open && handleClose()}
+      >
+        <Portal>
+          <Drawer.Backdrop />
+          <Drawer.Positioner>
+            <Drawer.Content>
+              <Drawer.Header>
+                <Drawer.Title>タスク詳細</Drawer.Title>
 
-              {!isEditing && task && (
-                <Stack direction="row" gap={2}>
-                  <Button
-                    colorPalette="green"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleStartEdit}
-                  >
-                    編集
+                {!isEditing && task && (
+                  <Stack direction="row" gap={2}>
+                    <Button
+                      colorPalette="green"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleStartEdit}
+                    >
+                      編集
+                    </Button>
+
+                    <Menu.Root>
+                      <Menu.Trigger asChild>
+                        <IconButton
+                          aria-label="タスク操作メニュー"
+                          size="sm"
+                          variant="ghost"
+                        >
+                          …
+                        </IconButton>
+                      </Menu.Trigger>
+
+                      <Portal>
+                        <Menu.Positioner>
+                          <Menu.Content>
+                            <Menu.Item
+                              value="delete"
+                              color="red.500"
+                              disabled={isDeleting}
+                              onClick={() => setIsDeleteConfirmOpen(true)}
+                            >
+                              削除
+                            </Menu.Item>
+                          </Menu.Content>
+                        </Menu.Positioner>
+                      </Portal>
+                    </Menu.Root>
+                  </Stack>
+                )}
+              </Drawer.Header>
+
+              <Drawer.Body>
+                {task ? (
+                  <Stack gap={4}>
+                    {isEditing ? (
+                      <>
+                        <Field.Root invalid={Boolean(errorMessage)}>
+                          <Field.Label>タスク名</Field.Label>
+                          <Input
+                            value={title}
+                            onChange={(event) => setTitle(event.target.value)}
+                          />
+                          {errorMessage && (
+                            <Field.ErrorText>{errorMessage}</Field.ErrorText>
+                          )}
+                        </Field.Root>
+
+                        <Field.Root>
+                          <Field.Label>説明</Field.Label>
+                          <Textarea
+                            value={description}
+                            onChange={(event) =>
+                              setDescription(event.target.value)
+                            }
+                          />
+                        </Field.Root>
+
+                        <Field.Root>
+                          <Field.Label>期限</Field.Label>
+                          <Input
+                            type="datetime-local"
+                            value={dueDate}
+                            onChange={(event) => setDueDate(event.target.value)}
+                          />
+                        </Field.Root>
+                      </>
+                    ) : (
+                      <>
+                        <Stack gap={1}>
+                          <Text fontWeight="bold">タスク名</Text>
+                          <Text>{task.title}</Text>
+                        </Stack>
+
+                        <Stack gap={1}>
+                          <Text fontWeight="bold">説明</Text>
+                          <Text color="gray.600">
+                            {task.description || "説明はありません."}
+                          </Text>
+                        </Stack>
+
+                        <Stack gap={1}>
+                          <Text fontWeight="bold">期限</Text>
+                          <Text color="gray.600">
+                            {task.due_date
+                              ? new Date(task.due_date).toLocaleString()
+                              : "期限はありません."}
+                          </Text>
+                        </Stack>
+                      </>
+                    )}
+                  </Stack>
+                ) : (
+                  <Text color="gray.500">タスクが選択されていません.</Text>
+                )}
+              </Drawer.Body>
+
+              <Drawer.Footer>
+                {isEditing ? (
+                  <Stack direction="row" gap={2}>
+                    <Button
+                      colorPalette="green"
+                      loading={isLoading}
+                      onClick={() => void handleUpdate()}
+                    >
+                      決定
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      キャンセル
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Button variant="outline" onClick={handleClose}>
+                    閉じる
                   </Button>
+                )}
+              </Drawer.Footer>
+            </Drawer.Content>
+          </Drawer.Positioner>
+        </Portal>
+      </Drawer.Root>
 
-                  <Menu.Root>
-                    <Menu.Trigger asChild>
-                      <IconButton
-                        aria-label="タスク操作メニュー"
-                        size="sm"
-                        variant="ghost"
-                      >
-                        …
-                      </IconButton>
-                    </Menu.Trigger>
-
-                    <Portal>
-                      <Menu.Positioner>
-                        <Menu.Content>
-                          <Menu.Item
-                            value="delete"
-                            color="red.500"
-                            disabled={isDeleting}
-                            onClick={() => void handleDelete()}
-                          >
-                            削除
-                          </Menu.Item>
-                        </Menu.Content>
-                      </Menu.Positioner>
-                    </Portal>
-                  </Menu.Root>
-                </Stack>
-              )}
-            </Drawer.Header>
-
-            <Drawer.Body>
-              {task ? (
-                <Stack gap={4}>
-                  {isEditing ? (
-                    <>
-                      <Field.Root invalid={Boolean(errorMessage)}>
-                        <Field.Label>タスク名</Field.Label>
-                        <Input
-                          value={title}
-                          onChange={(event) => setTitle(event.target.value)}
-                        />
-                        {errorMessage && (
-                          <Field.ErrorText>{errorMessage}</Field.ErrorText>
-                        )}
-                      </Field.Root>
-
-                      <Field.Root>
-                        <Field.Label>説明</Field.Label>
-                        <Textarea
-                          value={description}
-                          onChange={(event) =>
-                            setDescription(event.target.value)
-                          }
-                        />
-                      </Field.Root>
-
-                      <Field.Root>
-                        <Field.Label>期限</Field.Label>
-                        <Input
-                          type="datetime-local"
-                          value={dueDate}
-                          onChange={(event) => setDueDate(event.target.value)}
-                        />
-                      </Field.Root>
-                    </>
-                  ) : (
-                    <>
-                      <Stack gap={1}>
-                        <Text fontWeight="bold">タスク名</Text>
-                        <Text>{task.title}</Text>
-                      </Stack>
-
-                      <Stack gap={1}>
-                        <Text fontWeight="bold">説明</Text>
-                        <Text color="gray.600">
-                          {task.description || "説明はありません."}
-                        </Text>
-                      </Stack>
-
-                      <Stack gap={1}>
-                        <Text fontWeight="bold">期限</Text>
-                        <Text color="gray.600">
-                          {task.due_date
-                            ? new Date(task.due_date).toLocaleString()
-                            : "期限はありません."}
-                        </Text>
-                      </Stack>
-                    </>
-                  )}
-                </Stack>
-              ) : (
-                <Text color="gray.500">タスクが選択されていません.</Text>
-              )}
-            </Drawer.Body>
-
-            <Drawer.Footer>
-              {isEditing ? (
-                <Stack direction="row" gap={2}>
-                  <Button
-                    colorPalette="green"
-                    loading={isLoading}
-                    onClick={() => void handleUpdate()}
-                  >
-                    決定
-                  </Button>
-
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
-                    キャンセル
-                  </Button>
-                </Stack>
-              ) : (
-                <Button variant="outline" onClick={handleClose}>
-                  閉じる
-                </Button>
-              )}
-            </Drawer.Footer>
-          </Drawer.Content>
-        </Drawer.Positioner>
-      </Portal>
-    </Drawer.Root>
+      <TaskDeleteConfirmDialog
+        open={isDeleteConfirmOpen}
+        loading={isDeleting}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={() => void handleDelete()}
+      />
+    </>
   );
 };
