@@ -1,5 +1,6 @@
 import { Button, Field, Input, Stack, Textarea } from "@chakra-ui/react";
 import { useState } from "react";
+import { toaster } from "../ui/toaster";
 
 import { createTask } from "../../services/taskService";
 
@@ -50,6 +51,11 @@ export const TaskCreateForm = ({ projectId, onCreated, onClose }: Props) => {
         title,
         description: description.trim() ? description : null,
         due_date: dueDate ? new Date(dueDate).toISOString() : null,
+      });
+
+      toaster.create({
+        title: "タスクを作成しました.",
+        type: "success",
       });
 
       setTitle("");
