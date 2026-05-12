@@ -158,6 +158,21 @@ export const ProjectPage = () => {
   }
 
   /**
+   * タスク詳細Drawerを開く.
+   *
+   * Args:
+   *   task:
+   *     表示対象のタスク.
+   */
+  const openTaskDetailDrawer = async (task: Task): Promise<void> => {
+    setSelectedTask(task);
+    setTaskComments([]);
+    setIsTaskDetailDrawerOpen(true);
+
+    await loadTaskComments(task.id);
+  };
+
+  /**
    * 選択中タスクのコメント一覧を読み込む.
    *
    * Args:
@@ -192,8 +207,7 @@ export const ProjectPage = () => {
         }}
         onMoveTask={handleMoveTask}
         onClickTask={(task) => {
-          setSelectedTask(task);
-          setIsTaskDetailDrawerOpen(true);
+          void openTaskDetailDrawer(task);
         }}
       />
 
