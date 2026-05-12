@@ -126,3 +126,41 @@ export const moveTaskColumn = async (
 
   return response.data;
 };
+
+type UpdateTaskParams = {
+  taskId: string;
+  title: string;
+  description: string | null;
+  due_date: string | null;
+};
+
+/**
+ * タスクを更新する.
+ *
+ * Args:
+ *   params:
+ *     タスク更新パラメータ.
+ *
+ * Returns:
+ *   Promise<Task>:
+ *     更新後のタスク.
+ */
+export const updateTask = async (params: UpdateTaskParams): Promise<Task> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await client.patch<Task>(
+    `/tasks/${params.taskId}`,
+    {
+      title: params.title,
+      description: params.description,
+      due_date: params.due_date,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+  );
+
+  return response.data;
+};

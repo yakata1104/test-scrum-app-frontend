@@ -172,6 +172,7 @@ export const ProjectPage = () => {
         <TaskDetailDrawer
           task={selectedTask}
           open={isTaskDetailDrawerOpen}
+          onUpdated={reloadTaskBoard}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
