@@ -64,3 +64,25 @@ export const createTaskComment = async (
 
   return response.data;
 };
+
+/**
+ * タスクコメントを削除する.
+ *
+ * Args:
+ *   taskId:
+ *     タスクID.
+ *   commentId:
+ *     削除対象のコメントID.
+ */
+export const deleteTaskComment = async (
+  taskId: string,
+  commentId: string,
+): Promise<void> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  await client.delete(`/tasks/${taskId}/comments/${commentId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};
