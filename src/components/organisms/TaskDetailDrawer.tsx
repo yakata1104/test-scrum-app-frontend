@@ -15,13 +15,17 @@ import { useState } from "react";
 import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
+import type { TaskComment } from "../../types/taskComment";
+import { TaskCommentTimeline } from "./TaskCommentTimeline";
 
 type Props = {
   task: Task | null;
+  comments: TaskComment[];
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
   onDeleted: () => Promise<void>;
+  onReloadComments: () => Promise<void>;
 };
 /**
  * タスク詳細Drawerを表示する.
@@ -42,10 +46,12 @@ type Props = {
  */
 export const TaskDetailDrawer = ({
   task,
+  comments,
   open,
   onClose,
   onUpdated,
   onDeleted,
+  onReloadComments,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
@@ -144,6 +150,7 @@ export const TaskDetailDrawer = ({
       >
         <Portal>
           <Drawer.Backdrop />
+
           <Drawer.Positioner>
             <Drawer.Content>
               <Drawer.Header>
@@ -192,15 +199,17 @@ export const TaskDetailDrawer = ({
 
               <Drawer.Body>
                 {task ? (
-                  <Stack gap={4}>
+                  <Stack gap={6}>
                     {isEditing ? (
                       <>
                         <Field.Root invalid={Boolean(errorMessage)}>
                           <Field.Label>タスク名</Field.Label>
+
                           <Input
                             value={title}
                             onChange={(event) => setTitle(event.target.value)}
                           />
+
                           {errorMessage && (
                             <Field.ErrorText>{errorMessage}</Field.ErrorText>
                           )}
@@ -208,6 +217,7 @@ export const TaskDetailDrawer = ({
 
                         <Field.Root>
                           <Field.Label>説明</Field.Label>
+
                           <Textarea
                             value={description}
                             onChange={(event) =>
@@ -218,6 +228,7 @@ export const TaskDetailDrawer = ({
 
                         <Field.Root>
                           <Field.Label>期限</Field.Label>
+
                           <Input
                             type="datetime-local"
                             value={dueDate}
@@ -234,6 +245,7 @@ export const TaskDetailDrawer = ({
 
                         <Stack gap={1}>
                           <Text fontWeight="bold">説明</Text>
+
                           <Text color="gray.600">
                             {task.description || "説明はありません."}
                           </Text>
@@ -241,6 +253,7 @@ export const TaskDetailDrawer = ({
 
                         <Stack gap={1}>
                           <Text fontWeight="bold">期限</Text>
+
                           <Text color="gray.600">
                             {task.due_date
                               ? new Date(task.due_date).toLocaleString()
@@ -249,6 +262,12 @@ export const TaskDetailDrawer = ({
                         </Stack>
                       </>
                     )}
+
+                    <TaskCommentTimeline
+                      taskId={task.id}
+                      comments={comments}
+                      onReloadComments={onReloadComments}
+                    />
                   </Stack>
                 ) : (
                   <Text color="gray.500">タスクが選択されていません.</Text>

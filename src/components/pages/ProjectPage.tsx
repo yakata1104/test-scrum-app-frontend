@@ -21,6 +21,8 @@ import {
   moveTaskColumn,
 } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
+import { fetchTaskComments } from "../../services/taskCommentService";
+import type { TaskComment } from "../../types/taskComment";
 
 /**
  * プロジェクト画面を表示する.
@@ -40,6 +42,7 @@ export const ProjectPage = () => {
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
+  const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
 
   /**
    * タスクボード表示に必要なデータを再読み込みする.
@@ -154,6 +157,22 @@ export const ProjectPage = () => {
     return <Text color="red.500">プロジェクトIDが取得できません.</Text>;
   }
 
+  /**
+   * 選択中タスクのコメント一覧を読み込む.
+   *
+   * Args:
+   *   taskId:
+   *     タスクID.
+   */
+  const loadTaskComments = async (taskId: string): Promise<void> => {
+    try {
+      const fetchedComments = await fetchTaskComments(taskId);
+      setTaskComments(fetchedComments);
+    } catch {
+      setTaskComments([]);
+    }
+  };
+
   return (
     <Box>
       <Box
@@ -184,12 +203,19 @@ export const ProjectPage = () => {
       >
         <TaskDetailDrawer
           task={selectedTask}
+          comments={taskComments}
           open={isTaskDetailDrawerOpen}
           onUpdated={reloadTaskBoard}
           onDeleted={handleTaskDeleted}
+          onReloadComments={async () => {
+            if (selectedTask) {
+              await loadTaskComments(selectedTask.id);
+            }
+          }}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
+            setTaskComments([]);
           }}
         />
         <Portal>
