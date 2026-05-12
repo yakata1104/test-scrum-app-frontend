@@ -1,4 +1,4 @@
-import { Box, Heading, Stack, Text, Timeline } from "@chakra-ui/react";
+import { Avatar, Box, Heading, Stack, Text, Timeline } from "@chakra-ui/react";
 
 import type { TaskComment } from "../../types/taskComment";
 import { TaskCommentForm } from "../molecules/TaskCommentForm";
@@ -45,7 +45,13 @@ export const TaskCommentTimeline = ({
             <Timeline.Item key={comment.id}>
               <Timeline.Connector>
                 <Timeline.Separator />
-                <Timeline.Indicator />
+                <Timeline.Indicator>
+                  <Avatar.Root size="xs">
+                    <Avatar.Fallback>
+                      {comment.user_id.slice(0, 1).toUpperCase()}
+                    </Avatar.Fallback>
+                  </Avatar.Root>
+                </Timeline.Indicator>
               </Timeline.Connector>
 
               <Timeline.Content>
