@@ -7,6 +7,7 @@ type Props = {
   task: Task;
   columns: TaskColumn[];
   onMoveTask: (taskId: string, columnId: string) => Promise<void>;
+  onClickTask: (task: Task) => void;
 };
 
 /**
@@ -19,18 +20,20 @@ type Props = {
  *     移動先候補のタスクカラム一覧.
  *   onMoveTask:
  *     タスク移動時に実行する処理.
+ *   onClickTask:
+ *     タスクカード押下時に実行する処理.
  *
  * Returns:
  *   JSX.Element:
  *     タスクカード.
  */
-export const TaskCard = ({ task, columns, onMoveTask }: Props) => {
+export const TaskCard = ({ task, columns, onMoveTask, onClickTask }: Props) => {
   const movableColumns = columns.filter(
     (column) => column.id !== task.column_id,
   );
 
   return (
-    <Card.Root>
+    <Card.Root cursor="pointer" onClick={() => onClickTask(task)}>
       <Card.Body>
         <Text fontWeight="bold">{task.title}</Text>
 
@@ -47,7 +50,10 @@ export const TaskCard = ({ task, columns, onMoveTask }: Props) => {
               size="xs"
               variant="outline"
               colorPalette="green"
-              onClick={() => void onMoveTask(task.id, column.id)}
+              onClick={(event) => {
+                event.stopPropagation();
+                void onMoveTask(task.id, column.id);
+              }}
             >
               {column.name}へ移動
             </Button>

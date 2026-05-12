@@ -10,6 +10,7 @@ type Props = {
   tasks: Task[];
   onClickCreateTask: (column: TaskColumnType) => void;
   onMoveTask: (taskId: string, columnId: string) => Promise<void>;
+  onClickTask: (task: Task) => void;
 };
 
 /**
@@ -26,6 +27,8 @@ type Props = {
  *     タスク作成ボタン押下時の処理.
  *   onMoveTask:
  *     タスク移動時に実行する処理.
+ *   onClickTask:
+ *     タスクカード押下時に実行する処理.
  *
  * Returns:
  *   JSX.Element:
@@ -37,6 +40,7 @@ export const TaskColumn = ({
   tasks,
   onClickCreateTask,
   onMoveTask,
+  onClickTask,
 }: Props) => {
   return (
     <Box bg="gray.50" borderRadius="lg" minW="280px" p={4}>
@@ -67,6 +71,7 @@ export const TaskColumn = ({
               task={task}
               columns={columns}
               onMoveTask={onMoveTask}
+              onClickTask={onClickTask}
             />
           ))}
         </Stack>

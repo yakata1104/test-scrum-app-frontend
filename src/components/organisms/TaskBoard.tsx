@@ -9,6 +9,7 @@ type Props = {
   tasks: Task[];
   onClickCreateTask: (column: TaskColumn) => void;
   onMoveTask: (taskId: string, columnId: string) => Promise<void>;
+  onClickTask: (task: Task) => void;
 };
 
 /**
@@ -23,6 +24,8 @@ type Props = {
  *     タスク作成ボタン押下時の処理.
  *   onMoveTask:
  *     タスク移動時に実行する処理.
+ *   onClickTask:
+ *     タスクカード押下時に実行する処理.
  *
  * Returns:
  *   JSX.Element:
@@ -33,6 +36,7 @@ export const TaskBoard = ({
   tasks,
   onClickCreateTask,
   onMoveTask,
+  onClickTask,
 }: Props) => {
   if (columns.length === 0) {
     return <Text color="gray.500">タスクカラムがありません.</Text>;
@@ -59,6 +63,7 @@ export const TaskBoard = ({
             tasks={columnTasks}
             onClickCreateTask={onClickCreateTask}
             onMoveTask={onMoveTask}
+            onClickTask={onClickTask}
           />
         );
       })}

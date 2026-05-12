@@ -19,6 +19,7 @@ import {
   fetchTasks,
   moveTaskColumn,
 } from "../../services/taskService";
+import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 
 /**
  * プロジェクト画面を表示する.
@@ -36,6 +37,8 @@ export const ProjectPage = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
 
   /**
    * タスクボード表示に必要なデータを再読み込みする.
@@ -156,12 +159,24 @@ export const ProjectPage = () => {
           setIsCreateDialogOpen(true);
         }}
         onMoveTask={handleMoveTask}
+        onClickTask={(task) => {
+          setSelectedTask(task);
+          setIsTaskDetailDrawerOpen(true);
+        }}
       />
 
       <Dialog.Root
         open={isCreateDialogOpen}
         onOpenChange={(event) => setIsCreateDialogOpen(event.open)}
       >
+        <TaskDetailDrawer
+          task={selectedTask}
+          open={isTaskDetailDrawerOpen}
+          onClose={() => {
+            setIsTaskDetailDrawerOpen(false);
+            setSelectedTask(null);
+          }}
+        />
         <Portal>
           <Dialog.Backdrop />
           <Dialog.Positioner>
