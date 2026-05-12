@@ -2,7 +2,9 @@ import {
   Button,
   Drawer,
   Field,
+  IconButton,
   Input,
+  Menu,
   Portal,
   Stack,
   Text,
@@ -10,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
-import { updateTask } from "../../services/taskService";
+import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 
 type Props = {
@@ -18,8 +20,8 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
+  onDeleted: () => Promise<void>;
 };
-
 /**
  * タスク詳細Drawerを表示する.
  *
@@ -37,13 +39,20 @@ type Props = {
  *   JSX.Element:
  *     タスク詳細Drawer.
  */
-export const TaskDetailDrawer = ({ task, open, onClose, onUpdated }: Props) => {
+export const TaskDetailDrawer = ({
+  task,
+  open,
+  onClose,
+  onUpdated,
+  onDeleted,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   /**
    * 編集モードを開始する.
@@ -103,6 +112,28 @@ export const TaskDetailDrawer = ({ task, open, onClose, onUpdated }: Props) => {
     }
   };
 
+  /**
+   * タスク削除を実行する.
+   */
+  const handleDelete = async (): Promise<void> => {
+    if (!task) {
+      return;
+    }
+
+    setErrorMessage("");
+    setIsDeleting(true);
+
+    try {
+      await deleteTask(task.id);
+      await onDeleted();
+      handleClose();
+    } catch {
+      setErrorMessage("タスク削除に失敗しました.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Drawer.Root
       open={open}
@@ -116,14 +147,43 @@ export const TaskDetailDrawer = ({ task, open, onClose, onUpdated }: Props) => {
               <Drawer.Title>タスク詳細</Drawer.Title>
 
               {!isEditing && task && (
-                <Button
-                  colorPalette="green"
-                  size="sm"
-                  variant="outline"
-                  onClick={handleStartEdit}
-                >
-                  編集
-                </Button>
+                <Stack direction="row" gap={2}>
+                  <Button
+                    colorPalette="green"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleStartEdit}
+                  >
+                    編集
+                  </Button>
+
+                  <Menu.Root>
+                    <Menu.Trigger asChild>
+                      <IconButton
+                        aria-label="タスク操作メニュー"
+                        size="sm"
+                        variant="ghost"
+                      >
+                        …
+                      </IconButton>
+                    </Menu.Trigger>
+
+                    <Portal>
+                      <Menu.Positioner>
+                        <Menu.Content>
+                          <Menu.Item
+                            value="delete"
+                            color="red.500"
+                            disabled={isDeleting}
+                            onClick={() => void handleDelete()}
+                          >
+                            削除
+                          </Menu.Item>
+                        </Menu.Content>
+                      </Menu.Positioner>
+                    </Portal>
+                  </Menu.Root>
+                </Stack>
               )}
             </Drawer.Header>
 

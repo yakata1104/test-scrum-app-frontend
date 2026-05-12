@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { toaster } from "@/components/ui/toaster";
 
 import { TaskCreateForm } from "../molecules/TaskCreateForm";
 import { TaskBoard } from "../organisms/TaskBoard";
@@ -86,6 +87,18 @@ export const ProjectPage = () => {
     } catch {
       setErrorMessage("タスクの移動に失敗しました.");
     }
+  };
+
+  /**
+   * タスク削除後の処理を実行する.
+   */
+  const handleTaskDeleted = async (): Promise<void> => {
+    await reloadTaskBoard();
+
+    toaster.create({
+      title: "タスクを削除しました.",
+      type: "success",
+    });
   };
 
   useEffect(() => {
@@ -173,6 +186,7 @@ export const ProjectPage = () => {
           task={selectedTask}
           open={isTaskDetailDrawerOpen}
           onUpdated={reloadTaskBoard}
+          onDeleted={handleTaskDeleted}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);

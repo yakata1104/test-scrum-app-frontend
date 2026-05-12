@@ -164,3 +164,26 @@ export const updateTask = async (params: UpdateTaskParams): Promise<Task> => {
 
   return response.data;
 };
+
+/**
+ * タスクを削除する.
+ *
+ * Args:
+ *   taskId:
+ *     削除対象のタスクID.
+ *
+ * Returns:
+ *   Promise<Task>:
+ *     削除したタスク.
+ */
+export const deleteTask = async (taskId: string): Promise<Task> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  const response = await client.delete<Task>(`/tasks/${taskId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  return response.data;
+};
