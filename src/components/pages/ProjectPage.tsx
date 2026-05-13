@@ -23,6 +23,10 @@ import {
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { fetchTaskComments } from "../../services/taskCommentService";
 import type { TaskComment } from "../../types/taskComment";
+import { fetchProjectMembers } from "../../services/projectMemberService";
+import { fetchTaskAssignees } from "../../services/taskAssigneeService";
+import type { ProjectMember } from "../../types/projectMember";
+import type { TaskAssignee } from "../../types/taskAssignee";
 
 /**
  * プロジェクト画面を表示する.
@@ -43,6 +47,8 @@ export const ProjectPage = () => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
   const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
+  const [taskAssignees, setTaskAssignees] = useState<TaskAssignee[]>([]);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
 
   /**
    * タスクボード表示に必要なデータを再読み込みする.
@@ -165,11 +171,21 @@ export const ProjectPage = () => {
    *     表示対象のタスク.
    */
   const openTaskDetailDrawer = async (task: Task): Promise<void> => {
+    if (!projectId) {
+      return;
+    }
+
     setSelectedTask(task);
     setTaskComments([]);
+    setTaskAssignees([]);
+    setProjectMembers([]);
     setIsTaskDetailDrawerOpen(true);
 
-    await loadTaskComments(task.id);
+    await Promise.all([
+      loadTaskComments(task.id),
+      loadTaskAssignees(task.id),
+      loadProjectMembers(projectId),
+    ]);
   };
 
   /**
@@ -185,6 +201,38 @@ export const ProjectPage = () => {
       setTaskComments(fetchedComments);
     } catch {
       setTaskComments([]);
+    }
+  };
+
+  /**
+   * 選択中タスクの担当者一覧を読み込む.
+   *
+   * Args:
+   *   taskId:
+   *     タスクID.
+   */
+  const loadTaskAssignees = async (taskId: string): Promise<void> => {
+    try {
+      const fetchedAssignees = await fetchTaskAssignees(taskId);
+      setTaskAssignees(fetchedAssignees);
+    } catch {
+      setTaskAssignees([]);
+    }
+  };
+
+  /**
+   * プロジェクトメンバー一覧を読み込む.
+   *
+   * Args:
+   *   targetProjectId:
+   *     プロジェクトID.
+   */
+  const loadProjectMembers = async (targetProjectId: string): Promise<void> => {
+    try {
+      const fetchedProjectMembers = await fetchProjectMembers(targetProjectId);
+      setProjectMembers(fetchedProjectMembers);
+    } catch {
+      setProjectMembers([]);
     }
   };
 
@@ -218,6 +266,8 @@ export const ProjectPage = () => {
         <TaskDetailDrawer
           task={selectedTask}
           comments={taskComments}
+          assignees={taskAssignees}
+          projectMembers={projectMembers}
           open={isTaskDetailDrawerOpen}
           onUpdated={reloadTaskBoard}
           onDeleted={handleTaskDeleted}
@@ -226,10 +276,17 @@ export const ProjectPage = () => {
               await loadTaskComments(selectedTask.id);
             }
           }}
+          onReloadAssignees={async () => {
+            if (selectedTask) {
+              await loadTaskAssignees(selectedTask.id);
+            }
+          }}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
             setTaskComments([]);
+            setTaskAssignees([]);
+            setProjectMembers([]);
           }}
         />
         <Portal>

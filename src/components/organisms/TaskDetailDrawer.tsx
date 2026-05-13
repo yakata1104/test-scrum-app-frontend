@@ -17,16 +17,23 @@ import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
 import type { TaskComment } from "../../types/taskComment";
 import { TaskCommentTimeline } from "./TaskCommentTimeline";
+import type { ProjectMember } from "../../types/projectMember";
+import type { TaskAssignee } from "../../types/taskAssignee";
+import { TaskAssigneeSection } from "./TaskAssigneeSection";
 
 type Props = {
   task: Task | null;
   comments: TaskComment[];
+  assignees: TaskAssignee[];
+  projectMembers: ProjectMember[];
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
   onDeleted: () => Promise<void>;
   onReloadComments: () => Promise<void>;
+  onReloadAssignees: () => Promise<void>;
 };
+
 /**
  * タスク詳細Drawerを表示する.
  *
@@ -47,11 +54,14 @@ type Props = {
 export const TaskDetailDrawer = ({
   task,
   comments,
+  assignees,
+  projectMembers,
   open,
   onClose,
   onUpdated,
   onDeleted,
   onReloadComments,
+  onReloadAssignees,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
@@ -263,6 +273,12 @@ export const TaskDetailDrawer = ({
                       </>
                     )}
 
+                    <TaskAssigneeSection
+                      taskId={task.id}
+                      assignees={assignees}
+                      projectMembers={projectMembers}
+                      onReloadAssignees={onReloadAssignees}
+                    />
                     <TaskCommentTimeline
                       taskId={task.id}
                       comments={comments}
