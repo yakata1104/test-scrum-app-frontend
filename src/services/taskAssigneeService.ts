@@ -64,3 +64,25 @@ export const addTaskAssignee = async (
 
   return response.data;
 };
+
+/**
+ * タスク担当者を削除する.
+ *
+ * Args:
+ *   taskId:
+ *     タスクID.
+ *   userId:
+ *     削除対象のユーザーID.
+ */
+export const deleteTaskAssignee = async (
+  taskId: string,
+  userId: string,
+): Promise<void> => {
+  const accessToken = localStorage.getItem("accessToken");
+
+  await client.delete(`/tasks/${taskId}/assignees/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+};

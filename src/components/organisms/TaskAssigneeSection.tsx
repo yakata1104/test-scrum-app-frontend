@@ -1,10 +1,21 @@
-import { Button, Field, NativeSelect, Stack, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Field,
+  IconButton,
+  NativeSelect,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
 import { useState } from "react";
 
-import { addTaskAssignee } from "../../services/taskAssigneeService";
 import type { ProjectMember } from "../../types/projectMember";
 import type { TaskAssignee } from "../../types/taskAssignee";
 import { toaster } from "../ui/toaster";
+import {
+  addTaskAssignee,
+  deleteTaskAssignee,
+} from "../../services/taskAssigneeService";
 
 type Props = {
   taskId: string;
@@ -79,6 +90,29 @@ export const TaskAssigneeSection = ({
     }
   };
 
+  /**
+   * タスク担当者削除処理を実行する.
+   *
+   * Args:
+   *   userId:
+   *     削除対象のユーザーID.
+   */
+  const handleDeleteAssignee = async (userId: string): Promise<void> => {
+    setErrorMessage("");
+
+    try {
+      await deleteTaskAssignee(taskId, userId);
+      await onReloadAssignees();
+
+      toaster.create({
+        title: "担当者を削除しました.",
+        type: "success",
+      });
+    } catch {
+      setErrorMessage("担当者の削除に失敗しました.");
+    }
+  };
+
   return (
     <Stack gap={4} pt={6}>
       <Text fontWeight="bold">担当者</Text>
@@ -88,11 +122,27 @@ export const TaskAssigneeSection = ({
           担当者はいません.
         </Text>
       ) : (
-        <Stack gap={1}>
+        <Stack gap={2}>
           {assignees.map((assignee) => (
-            <Text key={assignee.id} fontSize="sm">
-              {assignee.user_id}
-            </Text>
+            <Box
+              key={assignee.id}
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+              gap={2}
+            >
+              <Text fontSize="sm">{assignee.user_id}</Text>
+
+              <IconButton
+                aria-label="担当者を削除"
+                colorPalette="red"
+                size="xs"
+                variant="ghost"
+                onClick={() => void handleDeleteAssignee(assignee.user_id)}
+              >
+                ×
+              </IconButton>
+            </Box>
           ))}
         </Stack>
       )}
