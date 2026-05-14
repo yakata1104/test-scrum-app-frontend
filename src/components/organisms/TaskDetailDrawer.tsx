@@ -252,7 +252,13 @@ export const TaskDetailDrawer = ({
                           <Text fontWeight="bold">タスク名</Text>
                           <Text>{task.title}</Text>
                         </Stack>
+                        <Stack gap={1}>
+                          <Text fontWeight="bold">タスクID</Text>
 
+                          <Text fontSize="xs" color="gray.500">
+                            {task.id}
+                          </Text>
+                        </Stack>
                         <Stack gap={1}>
                           <Text fontWeight="bold">説明</Text>
 

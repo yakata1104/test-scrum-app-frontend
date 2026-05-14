@@ -131,7 +131,7 @@ export const TaskAssigneeSection = ({
               justifyContent="space-between"
               gap={2}
             >
-              <Text fontSize="sm">{assignee.user_id}</Text>
+              <Text fontSize="sm">{assignee.user_name}</Text>
 
               <IconButton
                 aria-label="担当者を削除"
@@ -160,7 +160,7 @@ export const TaskAssigneeSection = ({
 
               {selectableMembers.map((member) => (
                 <option key={member.id} value={member.user_id}>
-                  {member.user_id} / {member.role}
+                  {member.user_name} / {member.role}
                 </option>
               ))}
             </NativeSelect.Field>

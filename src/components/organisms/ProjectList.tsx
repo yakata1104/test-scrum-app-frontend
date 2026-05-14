@@ -33,7 +33,7 @@ export const ProjectList = ({ projects, onClickCreate }: Props) => {
           <Card.Root
             key={project.id}
             cursor="pointer"
-            onClick={() => navigate(`/projects/${project.id}`)}
+            onClick={() => navigate(`/projects/${project.id}/board`)}
           >
             <Card.Body>
               <Heading size="md">{project.name}</Heading>

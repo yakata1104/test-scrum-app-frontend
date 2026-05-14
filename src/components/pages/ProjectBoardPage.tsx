@@ -35,7 +35,7 @@ import type { TaskAssignee } from "../../types/taskAssignee";
  *   JSX.Element:
  *     プロジェクト画面.
  */
-export const ProjectPage = () => {
+export const ProjectBoardPage = () => {
   const { projectId } = useParams();
 
   const [columns, setColumns] = useState<TaskColumn[]>([]);
