@@ -17,11 +17,10 @@ import type { Task } from "../../types/task";
 import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
-import { fetchProjectMembers } from "../../services/projectMemberService";
-import type { ProjectMember } from "../../types/projectMember";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { useTaskComments } from "@/hooks/useTaskComments";
 import { useTaskAssignees } from "@/hooks/useTaskAssignees";
+import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 /**
  * プロジェクト画面を表示する.
@@ -37,7 +36,6 @@ export const ProjectBoardPage = () => {
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
-  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
   const { taskComments, reloadComments } = useTaskComments(
@@ -46,6 +44,7 @@ export const ProjectBoardPage = () => {
   const { taskAssignees, reloadTaskAssignees } = useTaskAssignees(
     selectedTask?.id ?? null,
   );
+  const { projectMembers } = useProjectMembers(projectId);
 
   /**
    * タスクを別カラムへ移動する.
@@ -112,26 +111,7 @@ export const ProjectBoardPage = () => {
     }
 
     setSelectedTask(task);
-    setProjectMembers([]);
     setIsTaskDetailDrawerOpen(true);
-
-    await Promise.all([loadProjectMembers(projectId)]);
-  };
-
-  /**
-   * プロジェクトメンバー一覧を読み込む.
-   *
-   * Args:
-   *   targetProjectId:
-   *     プロジェクトID.
-   */
-  const loadProjectMembers = async (targetProjectId: string): Promise<void> => {
-    try {
-      const fetchedProjectMembers = await fetchProjectMembers(targetProjectId);
-      setProjectMembers(fetchedProjectMembers);
-    } catch {
-      setProjectMembers([]);
-    }
   };
 
   return (
@@ -180,7 +160,6 @@ export const ProjectBoardPage = () => {
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
-            setProjectMembers([]);
           }}
         />
         <Portal>
