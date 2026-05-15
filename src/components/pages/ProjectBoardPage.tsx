@@ -7,7 +7,7 @@ import {
   Spinner,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { toaster } from "@/components/ui/toaster";
 
@@ -15,19 +15,14 @@ import { TaskCreateForm } from "../molecules/TaskCreateForm";
 import { TaskBoard } from "../organisms/TaskBoard";
 import type { Task } from "../../types/task";
 import type { TaskColumn } from "../../types/taskColumn";
-import {
-  fetchTaskColumns,
-  fetchTasks,
-  moveTaskColumn,
-} from "../../services/taskService";
+import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
-import { fetchTaskComments } from "../../services/taskCommentService";
-import type { TaskComment } from "../../types/taskComment";
 import { fetchProjectMembers } from "../../services/projectMemberService";
 import { fetchTaskAssignees } from "../../services/taskAssigneeService";
 import type { ProjectMember } from "../../types/projectMember";
 import type { TaskAssignee } from "../../types/taskAssignee";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
+import { useTaskComments } from "@/hooks/useTaskComments";
 
 /**
  * プロジェクト画面を表示する.
@@ -43,11 +38,13 @@ export const ProjectBoardPage = () => {
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
-  const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
   const [taskAssignees, setTaskAssignees] = useState<TaskAssignee[]>([]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
+  const { taskComments, reloadComments } = useTaskComments(
+    selectedTask?.id ?? null,
+  );
 
   /**
    * タスクを別カラムへ移動する.
@@ -114,32 +111,14 @@ export const ProjectBoardPage = () => {
     }
 
     setSelectedTask(task);
-    setTaskComments([]);
     setTaskAssignees([]);
     setProjectMembers([]);
     setIsTaskDetailDrawerOpen(true);
 
     await Promise.all([
-      loadTaskComments(task.id),
       loadTaskAssignees(task.id),
       loadProjectMembers(projectId),
     ]);
-  };
-
-  /**
-   * 選択中タスクのコメント一覧を読み込む.
-   *
-   * Args:
-   *   taskId:
-   *     タスクID.
-   */
-  const loadTaskComments = async (taskId: string): Promise<void> => {
-    try {
-      const fetchedComments = await fetchTaskComments(taskId);
-      setTaskComments(fetchedComments);
-    } catch {
-      setTaskComments([]);
-    }
   };
 
   /**
@@ -212,9 +191,7 @@ export const ProjectBoardPage = () => {
           }}
           onDeleted={handleTaskDeleted}
           onReloadComments={async () => {
-            if (selectedTask) {
-              await loadTaskComments(selectedTask.id);
-            }
+            await reloadComments();
           }}
           onReloadAssignees={async () => {
             if (selectedTask) {
@@ -224,7 +201,6 @@ export const ProjectBoardPage = () => {
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
-            setTaskComments([]);
             setTaskAssignees([]);
             setProjectMembers([]);
           }}
