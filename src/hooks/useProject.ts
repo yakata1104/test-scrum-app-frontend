@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import type { Project } from "../types/project";
+import { useQuery } from "@tanstack/react-query";
 import { fetchProjects } from "../services/projectService";
 
 /**
@@ -10,52 +9,11 @@ import { fetchProjects } from "../services/projectService";
  *    プロジェクト一覧,エラーメッセージ,再読み込み処理
  */
 export const useProjects = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  /**
-   * プロジェクト一覧を再読み込みする.
-   */
-  const reloadProjects = async (): Promise<void> => {
-    try {
-      const fetchedProjects = await fetchProjects();
-      setProjects(fetchedProjects);
-      setErrorMessage("");
-    } catch {
-      setErrorMessage("プロジェクト一覧の取得に失敗しました.");
-    }
-  };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    /**
-     * 初期表示用にプロジェクト一覧を読み込む.
-     */
-    const loadInitialProjects = async (): Promise<void> => {
-      try {
-        const fetchedProjects = await fetchProjects();
-
-        if (isMounted) {
-          setProjects(fetchedProjects);
-        }
-      } catch {
-        if (isMounted) {
-          setErrorMessage("プロジェクト一覧の取得に失敗しました.");
-        }
-      }
-    };
-
-    void loadInitialProjects();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const query = useQuery({ queryKey: ["projects"], queryFn: fetchProjects });
 
   return {
-    projects,
-    errorMessage,
-    reloadProjects,
+    projects: query.data ?? [],
+    errorMessage: query.isError ? "プロジェクト一覧の取得に失敗しました." : "",
+    reloadProjects: query.refetch,
   };
 };
