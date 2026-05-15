@@ -7,12 +7,11 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { fetchProjects } from "../../services/projectService";
-import type { Project } from "../../types/project";
 import { ProjectCreateForm } from "../molecules/ProjectCreateForm";
 import { ProjectList } from "../organisms/ProjectList";
+import { useProjects } from "@/hooks/useProject";
 
 /**
  * ホーム画面を表示する.
@@ -22,49 +21,8 @@ import { ProjectList } from "../organisms/ProjectList";
  *     ホーム画面.
  */
 export const HomePage = () => {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [errorMessage, setErrorMessage] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    /**
-     * 初期表示用にプロジェクト一覧を読み込む.
-     */
-    const loadInitialProjects = async (): Promise<void> => {
-      try {
-        const fetchedProjects = await fetchProjects();
-
-        if (isMounted) {
-          setProjects(fetchedProjects);
-        }
-      } catch {
-        if (isMounted) {
-          setErrorMessage("プロジェクト一覧の取得に失敗しました.");
-        }
-      }
-    };
-
-    void loadInitialProjects();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  /**
-   * プロジェクト一覧を再読み込みする.
-   */
-  const reloadProjects = async (): Promise<void> => {
-    try {
-      const fetchedProjects = await fetchProjects();
-      setProjects(fetchedProjects);
-      setErrorMessage("");
-    } catch {
-      setErrorMessage("プロジェクト一覧の取得に失敗しました.");
-    }
-  };
+  const { projects, errorMessage, reloadProjects } = useProjects();
 
   return (
     <Stack gap={8}>
