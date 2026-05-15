@@ -18,11 +18,10 @@ import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { fetchProjectMembers } from "../../services/projectMemberService";
-import { fetchTaskAssignees } from "../../services/taskAssigneeService";
 import type { ProjectMember } from "../../types/projectMember";
-import type { TaskAssignee } from "../../types/taskAssignee";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { useTaskComments } from "@/hooks/useTaskComments";
+import { useTaskAssignees } from "@/hooks/useTaskAssignees";
 
 /**
  * プロジェクト画面を表示する.
@@ -38,11 +37,13 @@ export const ProjectBoardPage = () => {
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
-  const [taskAssignees, setTaskAssignees] = useState<TaskAssignee[]>([]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
   const { taskComments, reloadComments } = useTaskComments(
+    selectedTask?.id ?? null,
+  );
+  const { taskAssignees, reloadTaskAssignees } = useTaskAssignees(
     selectedTask?.id ?? null,
   );
 
@@ -111,30 +112,10 @@ export const ProjectBoardPage = () => {
     }
 
     setSelectedTask(task);
-    setTaskAssignees([]);
     setProjectMembers([]);
     setIsTaskDetailDrawerOpen(true);
 
-    await Promise.all([
-      loadTaskAssignees(task.id),
-      loadProjectMembers(projectId),
-    ]);
-  };
-
-  /**
-   * 選択中タスクの担当者一覧を読み込む.
-   *
-   * Args:
-   *   taskId:
-   *     タスクID.
-   */
-  const loadTaskAssignees = async (taskId: string): Promise<void> => {
-    try {
-      const fetchedAssignees = await fetchTaskAssignees(taskId);
-      setTaskAssignees(fetchedAssignees);
-    } catch {
-      setTaskAssignees([]);
-    }
+    await Promise.all([loadProjectMembers(projectId)]);
   };
 
   /**
@@ -194,14 +175,11 @@ export const ProjectBoardPage = () => {
             await reloadComments();
           }}
           onReloadAssignees={async () => {
-            if (selectedTask) {
-              await loadTaskAssignees(selectedTask.id);
-            }
+            await reloadTaskAssignees();
           }}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);
-            setTaskAssignees([]);
             setProjectMembers([]);
           }}
         />
