@@ -27,6 +27,7 @@ import { fetchProjectMembers } from "../../services/projectMemberService";
 import { fetchTaskAssignees } from "../../services/taskAssigneeService";
 import type { ProjectMember } from "../../types/projectMember";
 import type { TaskAssignee } from "../../types/taskAssignee";
+import { useTaskBoard } from "../../hooks/useTaskBoard";
 
 /**
  * プロジェクト画面を表示する.
@@ -38,10 +39,6 @@ import type { TaskAssignee } from "../../types/taskAssignee";
 export const ProjectBoardPage = () => {
   const { projectId } = useParams();
 
-  const [columns, setColumns] = useState<TaskColumn[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
@@ -49,29 +46,8 @@ export const ProjectBoardPage = () => {
   const [taskComments, setTaskComments] = useState<TaskComment[]>([]);
   const [taskAssignees, setTaskAssignees] = useState<TaskAssignee[]>([]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
-
-  /**
-   * タスクボード表示に必要なデータを再読み込みする.
-   */
-  const reloadTaskBoard = async (): Promise<void> => {
-    if (!projectId) {
-      setErrorMessage("プロジェクトIDが取得できません.");
-      return;
-    }
-
-    try {
-      const [fetchedColumns, fetchedTasks] = await Promise.all([
-        fetchTaskColumns(projectId),
-        fetchTasks(projectId),
-      ]);
-
-      setColumns(fetchedColumns);
-      setTasks(fetchedTasks);
-      setErrorMessage("");
-    } catch {
-      setErrorMessage("タスクボードの取得に失敗しました.");
-    }
-  };
+  const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
+    useTaskBoard(projectId);
 
   /**
    * タスクを別カラムへ移動する.
@@ -94,7 +70,10 @@ export const ProjectBoardPage = () => {
 
       await reloadTaskBoard();
     } catch {
-      setErrorMessage("タスクの移動に失敗しました.");
+      toaster.create({
+        title: "タスクの移動に失敗しました.",
+        type: "error",
+      });
     }
   };
 
@@ -109,47 +88,6 @@ export const ProjectBoardPage = () => {
       type: "success",
     });
   };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    /**
-     * タスクボード表示に必要なデータを読み込む.
-     */
-    const loadTaskBoard = async (): Promise<void> => {
-      if (!projectId) {
-        setErrorMessage("プロジェクトIDが取得できません.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const [fetchedColumns, fetchedTasks] = await Promise.all([
-          fetchTaskColumns(projectId),
-          fetchTasks(projectId),
-        ]);
-
-        if (isMounted) {
-          setColumns(fetchedColumns);
-          setTasks(fetchedTasks);
-        }
-      } catch {
-        if (isMounted) {
-          setErrorMessage("タスクボードの取得に失敗しました.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void loadTaskBoard();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [projectId]);
 
   if (isLoading) {
     return <Spinner />;
@@ -269,7 +207,9 @@ export const ProjectBoardPage = () => {
           assignees={taskAssignees}
           projectMembers={projectMembers}
           open={isTaskDetailDrawerOpen}
-          onUpdated={reloadTaskBoard}
+          onUpdated={async () => {
+            await reloadTaskBoard();
+          }}
           onDeleted={handleTaskDeleted}
           onReloadComments={async () => {
             if (selectedTask) {
@@ -303,7 +243,9 @@ export const ProjectBoardPage = () => {
               <Dialog.Body>
                 <TaskCreateForm
                   projectId={projectId}
-                  onCreated={reloadTaskBoard}
+                  onCreated={async () => {
+                    await reloadTaskBoard();
+                  }}
                   onClose={() => {
                     setIsCreateDialogOpen(false);
                     setSelectedColumn(null);
