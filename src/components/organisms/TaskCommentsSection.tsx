@@ -1,10 +1,8 @@
-import type { TaskComment } from "../../types/taskComment";
+import { useTaskComments } from "@/hooks/useTaskComments";
 import { TaskCommentTimeline } from "./TaskCommentTimeline";
 
 type Props = {
   taskId: string;
-  comments: TaskComment[];
-  onReloadComments: () => Promise<void>;
 };
 
 /**
@@ -13,25 +11,21 @@ type Props = {
  * Args:
  *   taskId:
  *     タスクID.
- *   comments:
- *     タスクコメント一覧.
- *   onReloadComments:
- *     コメント一覧を再読み込みする処理.
  *
  * Returns:
  *   JSX.Element:
  *     タスクコメントセクション.
  */
-export const TaskCommentsSection = ({
-  taskId,
-  comments,
-  onReloadComments,
-}: Props) => {
+export const TaskCommentsSection = ({ taskId }: Props) => {
+  const { taskComments, reloadComments } = useTaskComments(taskId);
+
   return (
     <TaskCommentTimeline
       taskId={taskId}
-      comments={comments}
-      onReloadComments={onReloadComments}
+      comments={taskComments}
+      onReloadComments={async () => {
+        await reloadComments();
+      }}
     />
   );
 };

@@ -15,7 +15,6 @@ import { useState } from "react";
 import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
-import type { TaskComment } from "../../types/taskComment";
 import type { ProjectMember } from "../../types/projectMember";
 import type { TaskAssignee } from "../../types/taskAssignee";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
@@ -23,14 +22,12 @@ import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type Props = {
   task: Task | null;
-  comments: TaskComment[];
   assignees: TaskAssignee[];
   projectMembers: ProjectMember[];
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
   onDeleted: () => Promise<void>;
-  onReloadComments: () => Promise<void>;
   onReloadAssignees: () => Promise<void>;
 };
 
@@ -53,14 +50,12 @@ type Props = {
  */
 export const TaskDetailDrawer = ({
   task,
-  comments,
   assignees,
   projectMembers,
   open,
   onClose,
   onUpdated,
   onDeleted,
-  onReloadComments,
   onReloadAssignees,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -285,11 +280,7 @@ export const TaskDetailDrawer = ({
                       projectMembers={projectMembers}
                       onReloadAssignees={onReloadAssignees}
                     />
-                    <TaskCommentsSection
-                      taskId={task.id}
-                      comments={comments}
-                      onReloadComments={onReloadComments}
-                    />
+                    <TaskCommentsSection taskId={task.id} />
                   </Stack>
                 ) : (
                   <Text color="gray.500">タスクが選択されていません.</Text>
