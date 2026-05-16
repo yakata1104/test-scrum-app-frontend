@@ -10,13 +10,17 @@ import {
   Text,
   Textarea,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { deleteTask, updateTask } from "../../services/taskService";
+import { deleteTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
 import { TaskCommentsSection } from "./TaskCommentsSection";
+import {
+  TaskEditForm,
+  type TaskEditFormHandle,
+} from "../molecules/TaskEditForm";
 
 type Props = {
   task: Task | null;
@@ -53,26 +57,16 @@ export const TaskDetailDrawer = ({
   onDeleted,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+  const taskEditFormRef = useRef<TaskEditFormHandle>(null);
 
   /**
    * 編集モードを開始する.
    */
   const handleStartEdit = (): void => {
-    if (!task) {
-      return;
-    }
-
-    setTitle(task.title);
-    setDescription(task.description ?? "");
-    setDueDate(task.due_date ? task.due_date.slice(0, 16) : "");
-    setErrorMessage("");
     setIsEditing(true);
   };
 
@@ -81,7 +75,6 @@ export const TaskDetailDrawer = ({
    */
   const handleClose = (): void => {
     setIsEditing(false);
-    setErrorMessage("");
     onClose();
   };
 
@@ -89,31 +82,10 @@ export const TaskDetailDrawer = ({
    * タスク更新を実行する.
    */
   const handleUpdate = async (): Promise<void> => {
-    if (!task) {
-      return;
-    }
-
-    setErrorMessage("");
-
-    if (!title.trim()) {
-      setErrorMessage("タスク名を入力してください.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await updateTask({
-        taskId: task.id,
-        title,
-        description: description.trim() ? description : null,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      });
-
-      await onUpdated();
-      setIsEditing(false);
-    } catch {
-      setErrorMessage("タスク更新に失敗しました.");
+      await taskEditFormRef.current?.submit();
     } finally {
       setIsLoading(false);
     }
@@ -126,19 +98,12 @@ export const TaskDetailDrawer = ({
     if (!task) {
       return;
     }
-
-    setErrorMessage("");
     setIsDeleting(true);
 
-    try {
-      await deleteTask(task.id);
-      await onDeleted();
-      handleClose();
-    } catch {
-      setErrorMessage("タスク削除に失敗しました.");
-    } finally {
-      setIsDeleting(false);
-    }
+    await deleteTask(task.id);
+    await onDeleted();
+    handleClose();
+    setIsDeleting(false);
   };
 
   return (
@@ -200,41 +165,12 @@ export const TaskDetailDrawer = ({
                 {task ? (
                   <Stack gap={6}>
                     {isEditing ? (
-                      <>
-                        <Field.Root invalid={Boolean(errorMessage)}>
-                          <Field.Label>タスク名</Field.Label>
-
-                          <Input
-                            value={title}
-                            onChange={(event) => setTitle(event.target.value)}
-                          />
-
-                          {errorMessage && (
-                            <Field.ErrorText>{errorMessage}</Field.ErrorText>
-                          )}
-                        </Field.Root>
-
-                        <Field.Root>
-                          <Field.Label>説明</Field.Label>
-
-                          <Textarea
-                            value={description}
-                            onChange={(event) =>
-                              setDescription(event.target.value)
-                            }
-                          />
-                        </Field.Root>
-
-                        <Field.Root>
-                          <Field.Label>期限</Field.Label>
-
-                          <Input
-                            type="datetime-local"
-                            value={dueDate}
-                            onChange={(event) => setDueDate(event.target.value)}
-                          />
-                        </Field.Root>
-                      </>
+                      <TaskEditForm
+                        ref={taskEditFormRef}
+                        task={task}
+                        onUpdated={onUpdated}
+                        onFinished={() => setIsEditing(false)}
+                      />
                     ) : (
                       <>
                         <Stack gap={1}>
