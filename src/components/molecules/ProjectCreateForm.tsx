@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createProject } from "../../services/projectService";
 
 type Props = {
-  onCreated: () => void;
+  onCreated: () => Promise<void>;
   onClose: () => void;
 };
 

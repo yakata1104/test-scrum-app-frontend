@@ -1,17 +1,9 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  Heading,
-  Portal,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Heading, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 
-import { ProjectCreateForm } from "../molecules/ProjectCreateForm";
 import { ProjectList } from "../organisms/ProjectList";
 import { useProjects } from "@/hooks/useProject";
+import { ProjectCreateDialog } from "../organisms/ProjectCreateDialog";
 
 /**
  * ホーム画面を表示する.
@@ -38,35 +30,13 @@ export const HomePage = () => {
           />
         )}
       </Box>
-
-      <Dialog.Root
+      <ProjectCreateDialog
         open={isCreateDialogOpen}
-        onOpenChange={(event) => setIsCreateDialogOpen(event.open)}
-      >
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content>
-              <Dialog.Header>
-                <Dialog.Title>プロジェクト作成</Dialog.Title>
-              </Dialog.Header>
-
-              <Dialog.Body>
-                <ProjectCreateForm
-                  onCreated={reloadProjects}
-                  onClose={() => setIsCreateDialogOpen(false)}
-                />
-              </Dialog.Body>
-
-              <Dialog.Footer>
-                <Dialog.ActionTrigger asChild>
-                  <Button variant="outline">閉じる</Button>
-                </Dialog.ActionTrigger>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+        onCreated={async () => {
+          await reloadProjects();
+        }}
+        onClose={() => setIsCreateDialogOpen(false)}
+      />
     </Stack>
   );
 };
