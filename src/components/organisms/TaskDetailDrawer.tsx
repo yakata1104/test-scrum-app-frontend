@@ -15,13 +15,12 @@ import { useState } from "react";
 import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
-import type { ProjectMember } from "../../types/projectMember";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
 import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type Props = {
   task: Task | null;
-  projectMembers: ProjectMember[];
+  projectId: string;
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
@@ -47,7 +46,7 @@ type Props = {
  */
 export const TaskDetailDrawer = ({
   task,
-  projectMembers,
+  projectId,
   open,
   onClose,
   onUpdated,
@@ -271,7 +270,7 @@ export const TaskDetailDrawer = ({
 
                     <TaskAssigneeSection
                       taskId={task.id}
-                      projectMembers={projectMembers}
+                      projectId={projectId}
                     />
                     <TaskCommentsSection taskId={task.id} />
                   </Stack>

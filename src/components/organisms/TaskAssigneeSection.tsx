@@ -14,12 +14,12 @@ import {
   addTaskAssignee,
   deleteTaskAssignee,
 } from "../../services/taskAssigneeService";
-import type { ProjectMember } from "../../types/projectMember";
 import { toaster } from "../ui/toaster";
+import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 type Props = {
   taskId: string;
-  projectMembers: ProjectMember[];
+  projectId: string;
 };
 
 /**
@@ -28,15 +28,16 @@ type Props = {
  * Args:
  *   taskId:
  *     タスクID.
- *   projectMembers:
- *     プロジェクトメンバー一覧.
+ *   projectId:
+ *     プロジェクトID.
  *
  * Returns:
  *   JSX.Element:
  *     タスク担当者セクション.
  */
-export const TaskAssigneeSection = ({ taskId, projectMembers }: Props) => {
+export const TaskAssigneeSection = ({ taskId, projectId }: Props) => {
   const { taskAssignees, reloadTaskAssignees } = useTaskAssignees(taskId);
+  const { projectMembers } = useProjectMembers(projectId);
 
   const [selectedUserId, setSelectedUserId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");

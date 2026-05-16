@@ -18,7 +18,6 @@ import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
-import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 /**
  * プロジェクト画面を表示する.
@@ -36,7 +35,6 @@ export const ProjectBoardPage = () => {
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
-  const { projectMembers } = useProjectMembers(projectId);
 
   /**
    * タスクを別カラムへ移動する.
@@ -135,7 +133,7 @@ export const ProjectBoardPage = () => {
       >
         <TaskDetailDrawer
           task={selectedTask}
-          projectMembers={projectMembers}
+          projectId={projectId}
           open={isTaskDetailDrawerOpen}
           onUpdated={async () => {
             await reloadTaskBoard();
