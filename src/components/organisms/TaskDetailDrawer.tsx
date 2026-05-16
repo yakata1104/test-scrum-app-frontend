@@ -16,10 +16,10 @@ import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
 import type { TaskComment } from "../../types/taskComment";
-import { TaskCommentTimeline } from "./TaskCommentTimeline";
 import type { ProjectMember } from "../../types/projectMember";
 import type { TaskAssignee } from "../../types/taskAssignee";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
+import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type Props = {
   task: Task | null;
@@ -285,7 +285,7 @@ export const TaskDetailDrawer = ({
                       projectMembers={projectMembers}
                       onReloadAssignees={onReloadAssignees}
                     />
-                    <TaskCommentTimeline
+                    <TaskCommentsSection
                       taskId={task.id}
                       comments={comments}
                       onReloadComments={onReloadComments}
