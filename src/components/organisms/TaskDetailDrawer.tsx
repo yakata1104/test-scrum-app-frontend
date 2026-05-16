@@ -92,10 +92,17 @@ export const TaskDetailDrawer = ({
     }
     setIsDeleting(true);
 
-    await deleteTask(task.id);
-    await onDeleted();
-    handleClose();
-    setIsDeleting(false);
+    try {
+      await deleteTask(task.id);
+
+      await onDeleted();
+
+      setIsDeleteConfirmOpen(false);
+
+      handleClose();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
