@@ -4,12 +4,12 @@ import { useParams } from "react-router-dom";
 import { toaster } from "@/components/ui/toaster";
 
 import { TaskBoard } from "../organisms/TaskBoard";
-import type { Task } from "../../types/task";
 import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { TaskCreateDialog } from "../organisms/TaskCreateDialog";
+import { useTaskDetailDrawer } from "@/hooks/useTaskDetailDrawer";
 
 /**
  * プロジェクト画面を表示する.
@@ -23,10 +23,14 @@ export const ProjectBoardPage = () => {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
+  const {
+    selectedTask,
+    isOpen: isTaskDetailDrawerOpen,
+    open: openTaskDetailDrawer,
+    close: closeTaskDetailDrawer,
+  } = useTaskDetailDrawer();
 
   /**
    * タスクを別カラムへ移動する.
@@ -80,22 +84,6 @@ export const ProjectBoardPage = () => {
     return <Text color="red.500">プロジェクトIDが取得できません.</Text>;
   }
 
-  /**
-   * タスク詳細Drawerを開く.
-   *
-   * Args:
-   *   task:
-   *     表示対象のタスク.
-   */
-  const openTaskDetailDrawer = async (task: Task): Promise<void> => {
-    if (!projectId) {
-      return;
-    }
-
-    setSelectedTask(task);
-    setIsTaskDetailDrawerOpen(true);
-  };
-
   return (
     <Box>
       <Box
@@ -114,9 +102,7 @@ export const ProjectBoardPage = () => {
           setIsCreateDialogOpen(true);
         }}
         onMoveTask={handleMoveTask}
-        onClickTask={(task) => {
-          void openTaskDetailDrawer(task);
-        }}
+        onClickTask={openTaskDetailDrawer}
       />
 
       <TaskDetailDrawer
@@ -127,10 +113,7 @@ export const ProjectBoardPage = () => {
           await reloadTaskBoard();
         }}
         onDeleted={handleTaskDeleted}
-        onClose={() => {
-          setIsTaskDetailDrawerOpen(false);
-          setSelectedTask(null);
-        }}
+        onClose={closeTaskDetailDrawer}
       />
       <TaskCreateDialog
         open={isCreateDialogOpen}
