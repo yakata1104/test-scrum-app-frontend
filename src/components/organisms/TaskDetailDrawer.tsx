@@ -1,37 +1,27 @@
-import {
-  Button,
-  Drawer,
-  Field,
-  IconButton,
-  Input,
-  Menu,
-  Portal,
-  Stack,
-  Text,
-  Textarea,
-} from "@chakra-ui/react";
-import { useState } from "react";
+import { Drawer, Portal, Stack, Text } from "@chakra-ui/react";
+import { useRef, useState } from "react";
 
-import { deleteTask, updateTask } from "../../services/taskService";
+import { deleteTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
-import type { TaskComment } from "../../types/taskComment";
-import { TaskCommentTimeline } from "./TaskCommentTimeline";
-import type { ProjectMember } from "../../types/projectMember";
-import type { TaskAssignee } from "../../types/taskAssignee";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
+import { TaskCommentsSection } from "./TaskCommentsSection";
+import {
+  TaskEditForm,
+  type TaskEditFormHandle,
+} from "../molecules/TaskEditForm";
+import { TaskDetailView } from "../molecules/TaskDetailView";
+import { TaskDetailDrawerHeaderActions } from "../molecules/TaskDetailDrawerHeaderActions";
+import { TaskDetailDrawerFooterActions } from "../molecules/TaskDetailDrawerFooterActions";
+import { toaster } from "../ui/toaster";
 
 type Props = {
   task: Task | null;
-  comments: TaskComment[];
-  assignees: TaskAssignee[];
-  projectMembers: ProjectMember[];
+  projectId: string;
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
   onDeleted: () => Promise<void>;
-  onReloadComments: () => Promise<void>;
-  onReloadAssignees: () => Promise<void>;
 };
 
 /**
@@ -53,37 +43,23 @@ type Props = {
  */
 export const TaskDetailDrawer = ({
   task,
-  comments,
-  assignees,
-  projectMembers,
+  projectId,
   open,
   onClose,
   onUpdated,
   onDeleted,
-  onReloadComments,
-  onReloadAssignees,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+
+  const taskEditFormRef = useRef<TaskEditFormHandle>(null);
 
   /**
    * 編集モードを開始する.
    */
   const handleStartEdit = (): void => {
-    if (!task) {
-      return;
-    }
-
-    setTitle(task.title);
-    setDescription(task.description ?? "");
-    setDueDate(task.due_date ? task.due_date.slice(0, 16) : "");
-    setErrorMessage("");
     setIsEditing(true);
   };
 
@@ -92,7 +68,6 @@ export const TaskDetailDrawer = ({
    */
   const handleClose = (): void => {
     setIsEditing(false);
-    setErrorMessage("");
     onClose();
   };
 
@@ -100,31 +75,10 @@ export const TaskDetailDrawer = ({
    * タスク更新を実行する.
    */
   const handleUpdate = async (): Promise<void> => {
-    if (!task) {
-      return;
-    }
-
-    setErrorMessage("");
-
-    if (!title.trim()) {
-      setErrorMessage("タスク名を入力してください.");
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await updateTask({
-        taskId: task.id,
-        title,
-        description: description.trim() ? description : null,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      });
-
-      await onUpdated();
-      setIsEditing(false);
-    } catch {
-      setErrorMessage("タスク更新に失敗しました.");
+      await taskEditFormRef.current?.submit();
     } finally {
       setIsLoading(false);
     }
@@ -137,16 +91,21 @@ export const TaskDetailDrawer = ({
     if (!task) {
       return;
     }
-
-    setErrorMessage("");
     setIsDeleting(true);
 
     try {
       await deleteTask(task.id);
+
       await onDeleted();
+
+      toaster.create({
+        title: "タスクを削除しました.",
+        type: "success",
+      });
+
+      setIsDeleteConfirmOpen(false);
+
       handleClose();
-    } catch {
-      setErrorMessage("タスク削除に失敗しました.");
     } finally {
       setIsDeleting(false);
     }
@@ -167,43 +126,11 @@ export const TaskDetailDrawer = ({
                 <Drawer.Title>タスク詳細</Drawer.Title>
 
                 {!isEditing && task && (
-                  <Stack direction="row" gap={2}>
-                    <Button
-                      colorPalette="green"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleStartEdit}
-                    >
-                      編集
-                    </Button>
-
-                    <Menu.Root>
-                      <Menu.Trigger asChild>
-                        <IconButton
-                          aria-label="タスク操作メニュー"
-                          size="sm"
-                          variant="ghost"
-                        >
-                          …
-                        </IconButton>
-                      </Menu.Trigger>
-
-                      <Portal>
-                        <Menu.Positioner>
-                          <Menu.Content>
-                            <Menu.Item
-                              value="delete"
-                              color="red.500"
-                              disabled={isDeleting}
-                              onClick={() => setIsDeleteConfirmOpen(true)}
-                            >
-                              削除
-                            </Menu.Item>
-                          </Menu.Content>
-                        </Menu.Positioner>
-                      </Portal>
-                    </Menu.Root>
-                  </Stack>
+                  <TaskDetailDrawerHeaderActions
+                    isDeleting={isDeleting}
+                    onClickEdit={handleStartEdit}
+                    onClickDelete={() => setIsDeleteConfirmOpen(true)}
+                  />
                 )}
               </Drawer.Header>
 
@@ -211,85 +138,21 @@ export const TaskDetailDrawer = ({
                 {task ? (
                   <Stack gap={6}>
                     {isEditing ? (
-                      <>
-                        <Field.Root invalid={Boolean(errorMessage)}>
-                          <Field.Label>タスク名</Field.Label>
-
-                          <Input
-                            value={title}
-                            onChange={(event) => setTitle(event.target.value)}
-                          />
-
-                          {errorMessage && (
-                            <Field.ErrorText>{errorMessage}</Field.ErrorText>
-                          )}
-                        </Field.Root>
-
-                        <Field.Root>
-                          <Field.Label>説明</Field.Label>
-
-                          <Textarea
-                            value={description}
-                            onChange={(event) =>
-                              setDescription(event.target.value)
-                            }
-                          />
-                        </Field.Root>
-
-                        <Field.Root>
-                          <Field.Label>期限</Field.Label>
-
-                          <Input
-                            type="datetime-local"
-                            value={dueDate}
-                            onChange={(event) => setDueDate(event.target.value)}
-                          />
-                        </Field.Root>
-                      </>
+                      <TaskEditForm
+                        ref={taskEditFormRef}
+                        task={task}
+                        onUpdated={onUpdated}
+                        onFinished={() => setIsEditing(false)}
+                      />
                     ) : (
-                      <>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">タスク名</Text>
-                          <Text>{task.title}</Text>
-                        </Stack>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">タスクID</Text>
-
-                          <Text fontSize="xs" color="gray.500">
-                            {task.id}
-                          </Text>
-                        </Stack>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">説明</Text>
-
-                          <Text color="gray.600">
-                            {task.description || "説明はありません."}
-                          </Text>
-                        </Stack>
-
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">期限</Text>
-
-                          <Text color="gray.600">
-                            {task.due_date
-                              ? new Date(task.due_date).toLocaleString()
-                              : "期限はありません."}
-                          </Text>
-                        </Stack>
-                      </>
+                      <TaskDetailView task={task} />
                     )}
 
                     <TaskAssigneeSection
                       taskId={task.id}
-                      assignees={assignees}
-                      projectMembers={projectMembers}
-                      onReloadAssignees={onReloadAssignees}
+                      projectId={projectId}
                     />
-                    <TaskCommentTimeline
-                      taskId={task.id}
-                      comments={comments}
-                      onReloadComments={onReloadComments}
-                    />
+                    <TaskCommentsSection taskId={task.id} />
                   </Stack>
                 ) : (
                   <Text color="gray.500">タスクが選択されていません.</Text>
@@ -297,28 +160,13 @@ export const TaskDetailDrawer = ({
               </Drawer.Body>
 
               <Drawer.Footer>
-                {isEditing ? (
-                  <Stack direction="row" gap={2}>
-                    <Button
-                      colorPalette="green"
-                      loading={isLoading}
-                      onClick={() => void handleUpdate()}
-                    >
-                      決定
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      キャンセル
-                    </Button>
-                  </Stack>
-                ) : (
-                  <Button variant="outline" onClick={handleClose}>
-                    閉じる
-                  </Button>
-                )}
+                <TaskDetailDrawerFooterActions
+                  isEditing={isEditing}
+                  isLoading={isLoading}
+                  onClickClose={handleClose}
+                  onClickCancel={() => setIsEditing(false)}
+                  onClickSubmit={() => void handleUpdate()}
+                />
               </Drawer.Footer>
             </Drawer.Content>
           </Drawer.Positioner>

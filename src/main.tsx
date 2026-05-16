@@ -5,13 +5,18 @@ import { Toaster } from "./components/ui/toaster";
 import "./index.css";
 import App from "./App.tsx";
 import { AuthProvider } from "./providers/AuthProvider";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <Provider>
       <AuthProvider>
-        <App />
-        <Toaster />
+        <QueryClientProvider client={queryClient}>
+          <App />
+          <Toaster />
+        </QueryClientProvider>
       </AuthProvider>
     </Provider>
   </StrictMode>,
