@@ -9,6 +9,7 @@ import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { TaskCreateDialog } from "../organisms/TaskCreateDialog";
 import { useTaskDetailDrawer } from "@/hooks/useTaskDetailDrawer";
 import { useTaskCreateDialog } from "@/hooks/useTaskCreateDialog";
+import { useMoveTaskColumn } from "@/hooks/useMoveTaskColumn";
 
 /**
  * プロジェクト画面を表示する.
@@ -34,34 +35,9 @@ export const ProjectBoardPage = () => {
     open: openTaskCreateDialog,
     close: closeTaskCreateDialog,
   } = useTaskCreateDialog();
-
-  /**
-   * タスクを別カラムへ移動する.
-   *
-   * Args:
-   *   taskId:
-   *     移動対象のタスクID.
-   *   columnId:
-   *     移動先のタスクカラムID.
-   */
-  const handleMoveTask = async (
-    taskId: string,
-    columnId: string,
-  ): Promise<void> => {
-    try {
-      await moveTaskColumn({
-        taskId,
-        columnId,
-      });
-
-      await reloadTaskBoard();
-    } catch {
-      toaster.create({
-        title: "タスクの移動に失敗しました.",
-        type: "error",
-      });
-    }
-  };
+  const { move: moveTask } = useMoveTaskColumn(async () => {
+    await reloadTaskBoard();
+  });
 
   /**
    * タスク削除後の処理を実行する.
@@ -101,7 +77,7 @@ export const ProjectBoardPage = () => {
         columns={columns}
         tasks={tasks}
         onClickCreateTask={openTaskCreateDialog}
-        onMoveTask={handleMoveTask}
+        onMoveTask={moveTask}
         onClickTask={openTaskDetailDrawer}
       />
 
