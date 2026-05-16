@@ -1,9 +1,7 @@
 import { Box, Heading, Spinner, Text } from "@chakra-ui/react";
 import { useParams } from "react-router-dom";
-import { toaster } from "@/components/ui/toaster";
 
 import { TaskBoard } from "../organisms/TaskBoard";
-import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { TaskCreateDialog } from "../organisms/TaskCreateDialog";
@@ -44,11 +42,6 @@ export const ProjectBoardPage = () => {
    */
   const handleTaskDeleted = async (): Promise<void> => {
     await reloadTaskBoard();
-
-    toaster.create({
-      title: "タスクを削除しました.",
-      type: "success",
-    });
   };
 
   if (isLoading) {

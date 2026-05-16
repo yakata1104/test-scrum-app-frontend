@@ -1,4 +1,4 @@
-import { Button, Drawer, Portal, Stack, Text } from "@chakra-ui/react";
+import { Drawer, Portal, Stack, Text } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 
 import { deleteTask } from "../../services/taskService";
@@ -13,6 +13,7 @@ import {
 import { TaskDetailView } from "../molecules/TaskDetailView";
 import { TaskDetailDrawerHeaderActions } from "../molecules/TaskDetailDrawerHeaderActions";
 import { TaskDetailDrawerFooterActions } from "../molecules/TaskDetailDrawerFooterActions";
+import { toaster } from "../ui/toaster";
 
 type Props = {
   task: Task | null;
@@ -96,6 +97,11 @@ export const TaskDetailDrawer = ({
       await deleteTask(task.id);
 
       await onDeleted();
+
+      toaster.create({
+        title: "タスクを削除しました.",
+        type: "success",
+      });
 
       setIsDeleteConfirmOpen(false);
 
