@@ -1,23 +1,15 @@
-import {
-  Box,
-  Button,
-  Dialog,
-  Heading,
-  Portal,
-  Spinner,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Heading, Spinner, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { toaster } from "@/components/ui/toaster";
 
-import { TaskCreateForm } from "../molecules/TaskCreateForm";
 import { TaskBoard } from "../organisms/TaskBoard";
 import type { Task } from "../../types/task";
 import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
+import { TaskCreateDialog } from "../organisms/TaskCreateDialog";
 
 /**
  * プロジェクト画面を表示する.
@@ -127,56 +119,31 @@ export const ProjectBoardPage = () => {
         }}
       />
 
-      <Dialog.Root
+      <TaskDetailDrawer
+        task={selectedTask}
+        projectId={projectId}
+        open={isTaskDetailDrawerOpen}
+        onUpdated={async () => {
+          await reloadTaskBoard();
+        }}
+        onDeleted={handleTaskDeleted}
+        onClose={() => {
+          setIsTaskDetailDrawerOpen(false);
+          setSelectedTask(null);
+        }}
+      />
+      <TaskCreateDialog
         open={isCreateDialogOpen}
-        onOpenChange={(event) => setIsCreateDialogOpen(event.open)}
-      >
-        <TaskDetailDrawer
-          task={selectedTask}
-          projectId={projectId}
-          open={isTaskDetailDrawerOpen}
-          onUpdated={async () => {
-            await reloadTaskBoard();
-          }}
-          onDeleted={handleTaskDeleted}
-          onClose={() => {
-            setIsTaskDetailDrawerOpen(false);
-            setSelectedTask(null);
-          }}
-        />
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content>
-              <Dialog.Header>
-                <Dialog.Title>
-                  タスク作成
-                  {selectedColumn ? ` - ${selectedColumn.name}` : ""}
-                </Dialog.Title>
-              </Dialog.Header>
-
-              <Dialog.Body>
-                <TaskCreateForm
-                  projectId={projectId}
-                  onCreated={async () => {
-                    await reloadTaskBoard();
-                  }}
-                  onClose={() => {
-                    setIsCreateDialogOpen(false);
-                    setSelectedColumn(null);
-                  }}
-                />
-              </Dialog.Body>
-
-              <Dialog.Footer>
-                <Dialog.ActionTrigger asChild>
-                  <Button variant="outline">キャンセル</Button>
-                </Dialog.ActionTrigger>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+        projectId={projectId}
+        selectedColumn={selectedColumn}
+        onCreated={async () => {
+          await reloadTaskBoard();
+        }}
+        onClose={() => {
+          setIsCreateDialogOpen(false);
+          setSelectedColumn(null);
+        }}
+      />
     </Box>
   );
 };
