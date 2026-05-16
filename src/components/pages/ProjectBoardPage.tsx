@@ -1,15 +1,14 @@
 import { Box, Heading, Spinner, Text } from "@chakra-ui/react";
-import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { toaster } from "@/components/ui/toaster";
 
 import { TaskBoard } from "../organisms/TaskBoard";
-import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
 import { TaskCreateDialog } from "../organisms/TaskCreateDialog";
 import { useTaskDetailDrawer } from "@/hooks/useTaskDetailDrawer";
+import { useTaskCreateDialog } from "@/hooks/useTaskCreateDialog";
 
 /**
  * プロジェクト画面を表示する.
@@ -21,8 +20,6 @@ import { useTaskDetailDrawer } from "@/hooks/useTaskDetailDrawer";
 export const ProjectBoardPage = () => {
   const { projectId } = useParams();
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [selectedColumn, setSelectedColumn] = useState<TaskColumn | null>(null);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
   const {
@@ -31,6 +28,12 @@ export const ProjectBoardPage = () => {
     open: openTaskDetailDrawer,
     close: closeTaskDetailDrawer,
   } = useTaskDetailDrawer();
+  const {
+    selectedColumn,
+    isOpen: isCreateDialogOpen,
+    open: openTaskCreateDialog,
+    close: closeTaskCreateDialog,
+  } = useTaskCreateDialog();
 
   /**
    * タスクを別カラムへ移動する.
@@ -97,10 +100,7 @@ export const ProjectBoardPage = () => {
       <TaskBoard
         columns={columns}
         tasks={tasks}
-        onClickCreateTask={(column) => {
-          setSelectedColumn(column);
-          setIsCreateDialogOpen(true);
-        }}
+        onClickCreateTask={openTaskCreateDialog}
         onMoveTask={handleMoveTask}
         onClickTask={openTaskDetailDrawer}
       />
@@ -122,10 +122,7 @@ export const ProjectBoardPage = () => {
         onCreated={async () => {
           await reloadTaskBoard();
         }}
-        onClose={() => {
-          setIsCreateDialogOpen(false);
-          setSelectedColumn(null);
-        }}
+        onClose={closeTaskCreateDialog}
       />
     </Box>
   );
