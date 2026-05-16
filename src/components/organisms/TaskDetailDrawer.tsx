@@ -12,6 +12,7 @@ import {
 } from "../molecules/TaskEditForm";
 import { TaskDetailView } from "../molecules/TaskDetailView";
 import { TaskDetailDrawerHeaderActions } from "../molecules/TaskDetailDrawerHeaderActions";
+import { TaskDetailDrawerFooterActions } from "../molecules/TaskDetailDrawerFooterActions";
 
 type Props = {
   task: Task | null;
@@ -146,28 +147,13 @@ export const TaskDetailDrawer = ({
               </Drawer.Body>
 
               <Drawer.Footer>
-                {isEditing ? (
-                  <Stack direction="row" gap={2}>
-                    <Button
-                      colorPalette="green"
-                      loading={isLoading}
-                      onClick={() => void handleUpdate()}
-                    >
-                      決定
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      キャンセル
-                    </Button>
-                  </Stack>
-                ) : (
-                  <Button variant="outline" onClick={handleClose}>
-                    閉じる
-                  </Button>
-                )}
+                <TaskDetailDrawerFooterActions
+                  isEditing={isEditing}
+                  isLoading={isLoading}
+                  onClickClose={handleClose}
+                  onClickCancel={() => setIsEditing(false)}
+                  onClickSubmit={() => void handleUpdate()}
+                />
               </Drawer.Footer>
             </Drawer.Content>
           </Drawer.Positioner>
