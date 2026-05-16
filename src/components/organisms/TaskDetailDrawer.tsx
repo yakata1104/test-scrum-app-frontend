@@ -21,6 +21,7 @@ import {
   TaskEditForm,
   type TaskEditFormHandle,
 } from "../molecules/TaskEditForm";
+import { TaskDetailView } from "../molecules/TaskDetailView";
 
 type Props = {
   task: Task | null;
@@ -172,36 +173,7 @@ export const TaskDetailDrawer = ({
                         onFinished={() => setIsEditing(false)}
                       />
                     ) : (
-                      <>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">タスク名</Text>
-                          <Text>{task.title}</Text>
-                        </Stack>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">タスクID</Text>
-
-                          <Text fontSize="xs" color="gray.500">
-                            {task.id}
-                          </Text>
-                        </Stack>
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">説明</Text>
-
-                          <Text color="gray.600">
-                            {task.description || "説明はありません."}
-                          </Text>
-                        </Stack>
-
-                        <Stack gap={1}>
-                          <Text fontWeight="bold">期限</Text>
-
-                          <Text color="gray.600">
-                            {task.due_date
-                              ? new Date(task.due_date).toLocaleString()
-                              : "期限はありません."}
-                          </Text>
-                        </Stack>
-                      </>
+                      <TaskDetailView task={task} />
                     )}
 
                     <TaskAssigneeSection
