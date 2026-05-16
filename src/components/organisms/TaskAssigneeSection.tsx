@@ -9,19 +9,17 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
-import type { ProjectMember } from "../../types/projectMember";
-import type { TaskAssignee } from "../../types/taskAssignee";
-import { toaster } from "../ui/toaster";
+import { useTaskAssignees } from "../../hooks/useTaskAssignees";
 import {
   addTaskAssignee,
   deleteTaskAssignee,
 } from "../../services/taskAssigneeService";
+import type { ProjectMember } from "../../types/projectMember";
+import { toaster } from "../ui/toaster";
 
 type Props = {
   taskId: string;
-  assignees: TaskAssignee[];
   projectMembers: ProjectMember[];
-  onReloadAssignees: () => Promise<void>;
 };
 
 /**
@@ -30,28 +28,21 @@ type Props = {
  * Args:
  *   taskId:
  *     タスクID.
- *   assignees:
- *     タスク担当者一覧.
  *   projectMembers:
  *     プロジェクトメンバー一覧.
- *   onReloadAssignees:
- *     担当者一覧を再読み込みする処理.
  *
  * Returns:
  *   JSX.Element:
  *     タスク担当者セクション.
  */
-export const TaskAssigneeSection = ({
-  taskId,
-  assignees,
-  projectMembers,
-  onReloadAssignees,
-}: Props) => {
+export const TaskAssigneeSection = ({ taskId, projectMembers }: Props) => {
+  const { taskAssignees, reloadTaskAssignees } = useTaskAssignees(taskId);
+
   const [selectedUserId, setSelectedUserId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const assigneeUserIds = assignees.map((assignee) => assignee.user_id);
+  const assigneeUserIds = taskAssignees.map((assignee) => assignee.user_id);
 
   const selectableMembers = projectMembers.filter(
     (member) => !assigneeUserIds.includes(member.user_id),
@@ -77,7 +68,7 @@ export const TaskAssigneeSection = ({
       });
 
       setSelectedUserId("");
-      await onReloadAssignees();
+      await reloadTaskAssignees();
 
       toaster.create({
         title: "担当者を追加しました.",
@@ -102,7 +93,7 @@ export const TaskAssigneeSection = ({
 
     try {
       await deleteTaskAssignee(taskId, userId);
-      await onReloadAssignees();
+      await reloadTaskAssignees();
 
       toaster.create({
         title: "担当者を削除しました.",
@@ -117,13 +108,13 @@ export const TaskAssigneeSection = ({
     <Stack gap={4} pt={6}>
       <Text fontWeight="bold">担当者</Text>
 
-      {assignees.length === 0 ? (
+      {taskAssignees.length === 0 ? (
         <Text color="gray.500" fontSize="sm">
           担当者はいません.
         </Text>
       ) : (
         <Stack gap={2}>
-          {assignees.map((assignee) => (
+          {taskAssignees.map((assignee) => (
             <Box
               key={assignee.id}
               display="flex"

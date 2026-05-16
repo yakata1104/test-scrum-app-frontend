@@ -18,7 +18,6 @@ import type { TaskColumn } from "../../types/taskColumn";
 import { moveTaskColumn } from "../../services/taskService";
 import { TaskDetailDrawer } from "../organisms/TaskDetailDrawer";
 import { useTaskBoard } from "../../hooks/useTaskBoard";
-import { useTaskAssignees } from "@/hooks/useTaskAssignees";
 import { useProjectMembers } from "@/hooks/useProjectMembers";
 
 /**
@@ -37,9 +36,6 @@ export const ProjectBoardPage = () => {
   const [isTaskDetailDrawerOpen, setIsTaskDetailDrawerOpen] = useState(false);
   const { columns, tasks, isLoading, errorMessage, reloadTaskBoard } =
     useTaskBoard(projectId);
-  const { taskAssignees, reloadTaskAssignees } = useTaskAssignees(
-    selectedTask?.id ?? null,
-  );
   const { projectMembers } = useProjectMembers(projectId);
 
   /**
@@ -139,16 +135,12 @@ export const ProjectBoardPage = () => {
       >
         <TaskDetailDrawer
           task={selectedTask}
-          assignees={taskAssignees}
           projectMembers={projectMembers}
           open={isTaskDetailDrawerOpen}
           onUpdated={async () => {
             await reloadTaskBoard();
           }}
           onDeleted={handleTaskDeleted}
-          onReloadAssignees={async () => {
-            await reloadTaskAssignees();
-          }}
           onClose={() => {
             setIsTaskDetailDrawerOpen(false);
             setSelectedTask(null);

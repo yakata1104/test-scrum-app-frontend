@@ -16,19 +16,16 @@ import { deleteTask, updateTask } from "../../services/taskService";
 import type { Task } from "../../types/task";
 import { TaskDeleteConfirmDialog } from "../molecules/TaskDeleteConfirmDialog";
 import type { ProjectMember } from "../../types/projectMember";
-import type { TaskAssignee } from "../../types/taskAssignee";
 import { TaskAssigneeSection } from "./TaskAssigneeSection";
 import { TaskCommentsSection } from "./TaskCommentsSection";
 
 type Props = {
   task: Task | null;
-  assignees: TaskAssignee[];
   projectMembers: ProjectMember[];
   open: boolean;
   onClose: () => void;
   onUpdated: () => Promise<void>;
   onDeleted: () => Promise<void>;
-  onReloadAssignees: () => Promise<void>;
 };
 
 /**
@@ -50,13 +47,11 @@ type Props = {
  */
 export const TaskDetailDrawer = ({
   task,
-  assignees,
   projectMembers,
   open,
   onClose,
   onUpdated,
   onDeleted,
-  onReloadAssignees,
 }: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [title, setTitle] = useState("");
@@ -276,9 +271,7 @@ export const TaskDetailDrawer = ({
 
                     <TaskAssigneeSection
                       taskId={task.id}
-                      assignees={assignees}
                       projectMembers={projectMembers}
-                      onReloadAssignees={onReloadAssignees}
                     />
                     <TaskCommentsSection taskId={task.id} />
                   </Stack>
