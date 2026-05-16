@@ -3,6 +3,7 @@ import type { Task } from "@/types/task";
 import { Field } from "@ark-ui/react";
 import { Input, Stack, Textarea } from "@chakra-ui/react";
 import { forwardRef, useImperativeHandle, useState } from "react";
+import { toaster } from "../ui/toaster";
 
 type Props = {
   task: Task;
@@ -45,15 +46,28 @@ export const TaskEditForm = forwardRef<TaskEditFormHandle, Props>(
         return;
       }
 
-      await updateTask({
-        taskId: task.id,
-        title,
-        description: description.trim() ? description : null,
-        due_date: dueDate ? new Date(dueDate).toISOString() : null,
-      });
+      try {
+        await updateTask({
+          taskId: task.id,
+          title,
+          description: description.trim() ? description : null,
+          due_date: dueDate ? new Date(dueDate).toISOString() : null,
+        });
 
-      await onUpdated();
-      onFinished();
+        await onUpdated();
+
+        toaster.create({
+          title: "タスクを更新しました.",
+          type: "success",
+        });
+
+        onFinished();
+      } catch {
+        toaster.create({
+          title: "タスク更新に失敗しました.",
+          type: "error",
+        });
+      }
     };
 
     useImperativeHandle(ref, () => ({
