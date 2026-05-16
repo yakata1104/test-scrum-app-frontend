@@ -1,15 +1,4 @@
-import {
-  Button,
-  Drawer,
-  Field,
-  IconButton,
-  Input,
-  Menu,
-  Portal,
-  Stack,
-  Text,
-  Textarea,
-} from "@chakra-ui/react";
+import { Button, Drawer, Portal, Stack, Text } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 
 import { deleteTask } from "../../services/taskService";
@@ -22,6 +11,7 @@ import {
   type TaskEditFormHandle,
 } from "../molecules/TaskEditForm";
 import { TaskDetailView } from "../molecules/TaskDetailView";
+import { TaskDetailDrawerHeaderActions } from "../molecules/TaskDetailDrawerHeaderActions";
 
 type Props = {
   task: Task | null;
@@ -122,43 +112,11 @@ export const TaskDetailDrawer = ({
                 <Drawer.Title>タスク詳細</Drawer.Title>
 
                 {!isEditing && task && (
-                  <Stack direction="row" gap={2}>
-                    <Button
-                      colorPalette="green"
-                      size="sm"
-                      variant="outline"
-                      onClick={handleStartEdit}
-                    >
-                      編集
-                    </Button>
-
-                    <Menu.Root>
-                      <Menu.Trigger asChild>
-                        <IconButton
-                          aria-label="タスク操作メニュー"
-                          size="sm"
-                          variant="ghost"
-                        >
-                          …
-                        </IconButton>
-                      </Menu.Trigger>
-
-                      <Portal>
-                        <Menu.Positioner>
-                          <Menu.Content>
-                            <Menu.Item
-                              value="delete"
-                              color="red.500"
-                              disabled={isDeleting}
-                              onClick={() => setIsDeleteConfirmOpen(true)}
-                            >
-                              削除
-                            </Menu.Item>
-                          </Menu.Content>
-                        </Menu.Positioner>
-                      </Portal>
-                    </Menu.Root>
-                  </Stack>
+                  <TaskDetailDrawerHeaderActions
+                    isDeleting={isDeleting}
+                    onClickEdit={handleStartEdit}
+                    onClickDelete={() => setIsDeleteConfirmOpen(true)}
+                  />
                 )}
               </Drawer.Header>
 
