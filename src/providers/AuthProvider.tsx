@@ -2,7 +2,7 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 
 type AuthContextType = {
   isAuthenticated: boolean;
-  login: (accessToken: string, refreshToken: string) => void;
+  login: () => void;
   logout: () => void;
 };
 
@@ -24,32 +24,18 @@ type Props = {
  *     AuthProviderコンポーネント.
  */
 export const AuthProvider = ({ children }: Props) => {
-  const [accessToken, setAccessToken] = useState<string | null>(() =>
-    localStorage.getItem("accessToken"),
-  );
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const isAuthenticated = accessToken !== null;
-
-  const login = (newAccessToken: string, newRefreshToken: string) => {
-    localStorage.setItem("accessToken", newAccessToken);
-    localStorage.setItem("refreshToken", newRefreshToken);
-    setAccessToken(newAccessToken);
+  const login = (): void => {
+    setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    setAccessToken(null);
+  const logout = (): void => {
+    setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated,
-        login,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

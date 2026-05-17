@@ -20,12 +20,12 @@ export const LoginForm = () => {
     setIsLoading(true);
 
     try {
-      const loginResponse = await loginApi({
+      await loginApi({
         email,
         password,
       });
 
-      login(loginResponse.access_token, loginResponse.refresh_token);
+      login();
 
       navigate("/home");
     } catch {
