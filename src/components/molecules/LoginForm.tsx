@@ -2,7 +2,7 @@ import { Button, Field, Input, Stack, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../providers/AuthProvider";
+import { useAuth } from "../../providers/AuthContext";
 import { login as loginApi } from "../../services/authService";
 
 export const LoginForm = () => {
@@ -25,7 +25,7 @@ export const LoginForm = () => {
         password,
       });
 
-      login();
+      await login();
 
       navigate("/home");
     } catch {

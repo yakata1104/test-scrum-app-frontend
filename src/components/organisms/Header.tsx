@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Heading } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
-import { useAuth } from "../../providers/AuthProvider";
+import { useAuth } from "../../providers/AuthContext";
 import { logout as logoutApi } from "../../services/authService";
 
 /**

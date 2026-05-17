@@ -1,5 +1,6 @@
 import { client } from "../api/client";
 import type { LoginResponse } from "../types/auth";
+import type { User } from "@/types/user";
 
 type LoginParams = {
   email: string;
@@ -29,4 +30,17 @@ export const login = async ({
  */
 export const logout = async (): Promise<void> => {
   await client.post("auth/logout");
+};
+
+/**
+ * ログイン中ユーザーを取得する.
+ *
+ * Returns:
+ *  Promise<User>:
+ *    ログイン中ユーザ-
+ */
+export const fetchMe = async (): Promise<User> => {
+  const response = await client.get<User>("/auth/me");
+
+  return response.data;
 };

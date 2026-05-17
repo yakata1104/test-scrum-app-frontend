@@ -1,12 +1,9 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState, type ReactNode } from "react";
 
-type AuthContextType = {
-  isAuthenticated: boolean;
-  login: () => void;
-  logout: () => void;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { fetchMe } from "@/services/authService";
+import type { User } from "@/types/user";
+import { AuthContext } from "./AuthContext";
 
 type Props = {
   children: ReactNode;
@@ -24,36 +21,40 @@ type Props = {
  *     AuthProviderコンポーネント.
  */
 export const AuthProvider = ({ children }: Props) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  const login = (): void => {
-    setIsAuthenticated(true);
+  const meQuery = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: fetchMe,
+    retry: false,
+  });
+
+  const authenticatedUser = currentUser ?? meQuery.data ?? null;
+
+  const isAuthenticated = authenticatedUser !== null;
+
+  /** ログイン状態に更新する. */
+  const login = async (): Promise<void> => {
+    const user = await fetchMe();
+    setCurrentUser(user);
   };
 
+  /** ログアウト状態に更新する. */
   const logout = (): void => {
-    setIsAuthenticated(false);
+    setCurrentUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        currentUser: authenticatedUser,
+        isAuthenticated,
+        isLoading: meQuery.isLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
-
-/**
- * 認証情報を取得するhook.
- *
- * Returns:
- *   AuthContextType:
- *     認証コンテキスト.
- */
-export const useAuth = () => {
-  const authContext = useContext(AuthContext);
-
-  if (authContext === undefined) {
-    throw new Error("useAuth は AuthProvider の中で使用してください.");
-  }
-
-  return authContext;
 };
