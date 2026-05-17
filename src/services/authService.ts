@@ -23,3 +23,10 @@ export const login = async ({
 
   return response.data;
 };
+
+/**
+ * ログアウトする.
+ */
+export const logout = async (): Promise<void> => {
+  await client.post("auth/logout");
+};

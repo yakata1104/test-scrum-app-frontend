@@ -2,6 +2,7 @@ import { Box, Button, Flex, Heading } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../providers/AuthProvider";
+import { logout as logoutApi } from "../../services/authService";
 
 /**
  * 共通ヘッダーを表示する.
@@ -17,9 +18,13 @@ export const Header = () => {
   /**
    * ログアウト処理を実行する.
    */
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async (): Promise<void> => {
+    try {
+      await logoutApi();
+    } finally {
+      logout();
+      navigate("/login");
+    }
   };
 
   return (
@@ -39,7 +44,7 @@ export const Header = () => {
           bg="white"
           color="green.600"
           _hover={{ bg: "green.50" }}
-          onClick={handleLogout}
+          onClick={() => void handleLogout()}
         >
           ログアウト
         </Button>
