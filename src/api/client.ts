@@ -67,6 +67,8 @@ client.interceptors.response.use(
       | RetryableAxiosRequestConfig
       | undefined;
 
+    const requestUrl = originalRequest?.url ?? "";
+
     /**
      * 以下の場合はrefreshを実行しない:
      * - 401以外
@@ -76,7 +78,9 @@ client.interceptors.response.use(
     if (
       error.response?.status !== 401 ||
       originalRequest === undefined ||
-      originalRequest._retry
+      originalRequest._retry ||
+      requestUrl.includes("/auth/me") ||
+      requestUrl.includes("/auth/refresh")
     ) {
       return Promise.reject(error);
     }
@@ -91,6 +95,9 @@ client.interceptors.response.use(
       // 元のリクエストを再実行する.
       return client(originalRequest);
     } catch (refreshError) {
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
       // refresh失敗時は認証継続不可.
       return Promise.reject(refreshError);
     }
