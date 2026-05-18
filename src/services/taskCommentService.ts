@@ -15,16 +15,7 @@ import type { TaskComment } from "../types/taskComment";
 export const fetchTaskComments = async (
   taskId: string,
 ): Promise<TaskComment[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.get<TaskComment[]>(
-    `/tasks/${taskId}/comments`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  const response = await client.get<TaskComment[]>(`/tasks/${taskId}/comments`);
 
   return response.data;
 };
@@ -48,17 +39,10 @@ type CreateTaskCommentParams = {
 export const createTaskComment = async (
   params: CreateTaskCommentParams,
 ): Promise<TaskComment> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.post<TaskComment>(
     `/tasks/${params.taskId}/comments`,
     {
       content: params.content,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     },
   );
 
@@ -78,11 +62,5 @@ export const deleteTaskComment = async (
   taskId: string,
   commentId: string,
 ): Promise<void> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  await client.delete(`/tasks/${taskId}/comments/${commentId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  await client.delete(`/tasks/${taskId}/comments/${commentId}`);
 };

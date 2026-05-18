@@ -16,15 +16,8 @@ import type { TaskColumn } from "../types/taskColumn";
 export const fetchTaskColumns = async (
   projectId: string,
 ): Promise<TaskColumn[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.get<TaskColumn[]>(
     `/projects/${projectId}/columns`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
   );
 
   return response.data;
@@ -42,13 +35,7 @@ export const fetchTaskColumns = async (
  *     タスク一覧.
  */
 export const fetchTasks = async (projectId: string): Promise<Task[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.get<Task[]>(`/projects/${projectId}/tasks`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await client.get<Task[]>(`/projects/${projectId}/tasks`);
 
   return response.data;
 };
@@ -72,19 +59,12 @@ type CreateTaskParams = {
  *     作成したタスク.
  */
 export const createTask = async (params: CreateTaskParams): Promise<Task> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.post<Task>(
     `/projects/${params.projectId}/tasks`,
     {
       title: params.title,
       description: params.description,
       due_date: params.due_date,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     },
   );
 
@@ -110,19 +90,9 @@ type MoveTaskColumnParams = {
 export const moveTaskColumn = async (
   params: MoveTaskColumnParams,
 ): Promise<Task> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.patch<Task>(
-    `/tasks/${params.taskId}/column`,
-    {
-      column_id: params.columnId,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  const response = await client.patch<Task>(`/tasks/${params.taskId}/column`, {
+    column_id: params.columnId,
+  });
 
   return response.data;
 };
@@ -146,21 +116,11 @@ type UpdateTaskParams = {
  *     更新後のタスク.
  */
 export const updateTask = async (params: UpdateTaskParams): Promise<Task> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.patch<Task>(
-    `/tasks/${params.taskId}`,
-    {
-      title: params.title,
-      description: params.description,
-      due_date: params.due_date,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
-  );
+  const response = await client.patch<Task>(`/tasks/${params.taskId}`, {
+    title: params.title,
+    description: params.description,
+    due_date: params.due_date,
+  });
 
   return response.data;
 };
@@ -177,13 +137,7 @@ export const updateTask = async (params: UpdateTaskParams): Promise<Task> => {
  *     削除したタスク.
  */
 export const deleteTask = async (taskId: string): Promise<Task> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.delete<Task>(`/tasks/${taskId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await client.delete<Task>(`/tasks/${taskId}`);
 
   return response.data;
 };

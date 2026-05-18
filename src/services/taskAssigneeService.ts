@@ -15,15 +15,8 @@ import type { TaskAssignee } from "../types/taskAssignee";
 export const fetchTaskAssignees = async (
   taskId: string,
 ): Promise<TaskAssignee[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.get<TaskAssignee[]>(
     `/tasks/${taskId}/assignees`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
   );
 
   return response.data;
@@ -48,17 +41,10 @@ type AddTaskAssigneeParams = {
 export const addTaskAssignee = async (
   params: AddTaskAssigneeParams,
 ): Promise<TaskAssignee> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.post<TaskAssignee>(
     `/tasks/${params.taskId}/assignees`,
     {
       user_id: params.userId,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     },
   );
 
@@ -78,11 +64,5 @@ export const deleteTaskAssignee = async (
   taskId: string,
   userId: string,
 ): Promise<void> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  await client.delete(`/tasks/${taskId}/assignees/${userId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  await client.delete(`/tasks/${taskId}/assignees/${userId}`);
 };

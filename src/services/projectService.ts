@@ -14,13 +14,7 @@ type CreateProjectParams = {
  *     プロジェクト一覧.
  */
 export const fetchProjects = async (): Promise<Project[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.get<Project[]>("/projects", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await client.get<Project[]>("/projects");
 
   return response.data;
 };
@@ -39,13 +33,7 @@ export const fetchProjects = async (): Promise<Project[]> => {
 export const createProject = async (
   params: CreateProjectParams,
 ): Promise<Project> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  const response = await client.post<Project>("/projects", params, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  const response = await client.post<Project>("/projects", params);
 
   return response.data;
 };
