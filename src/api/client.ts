@@ -1,5 +1,4 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
-import { PiNuclearPlantLight } from "react-icons/pi";
 
 /**
  * 通常API通信用のAxiosクライアント.

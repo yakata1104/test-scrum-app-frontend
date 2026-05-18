@@ -15,15 +15,8 @@ import type { ProjectMember } from "../types/projectMember";
 export const fetchProjectMembers = async (
   projectId: string,
 ): Promise<ProjectMember[]> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.get<ProjectMember[]>(
     `/projects/${projectId}/members`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
   );
 
   return response.data;
@@ -48,17 +41,10 @@ type AddProjectMemberParams = {
 export const addProjectMember = async (
   params: AddProjectMemberParams,
 ): Promise<ProjectMember> => {
-  const accessToken = localStorage.getItem("accessToken");
-
   const response = await client.post<ProjectMember>(
     `/projects/${params.projectId}/members`,
     {
       email: params.email,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     },
   );
 
@@ -78,11 +64,5 @@ export const deleteProjectMember = async (
   projectId: string,
   userId: string,
 ): Promise<void> => {
-  const accessToken = localStorage.getItem("accessToken");
-
-  await client.delete(`/projects/${projectId}/members/${userId}`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+  await client.delete(`/projects/${projectId}/members/${userId}`);
 };
