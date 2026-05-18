@@ -1,4 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { PiNuclearPlantLight } from "react-icons/pi";
 
 /**
  * 通常API通信用のAxiosクライアント.
@@ -96,3 +97,56 @@ client.interceptors.response.use(
     }
   },
 );
+
+/**
+ * Cookieから指定した名前の値を取得する.
+ *
+ * Args:
+ *   name:
+ *     Cookie名.
+ */
+const getCookieValue = (name: string): string | null => {
+  // document.cookie は以下形式の文字列: "a=xxx; b=yyy; c=zzz"
+  const cookies = document.cookie.split("; ");
+
+  // 指定Cookieを検索する.
+  const targetCookie = cookies.find((cookie) => cookie.startsWith(`${name}=`));
+
+  if (!targetCookie) {
+    return null;
+  }
+
+  // "name=value" の value 部分を返却する.
+  return decodeURIComponent(targetCookie.split("=")[1]);
+};
+
+/**
+ * リクエストinterceptor.
+ *
+ * 更新系API実行時はCSRF対策として
+ * Cookieに保存されたcsrf_tokenを
+ * X-CSRF-Token Headerへ付与する.
+ */
+client.interceptors.request.use((config) => {
+  // HTTPメソッドを大文字へ統一する.
+  const method = config.method?.toUpperCase();
+
+  // 更新系リクエストのみCSRFトークンを付与する. GETはサーバー状態を変更しないため不要.
+  if (method && ["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
+    const csrfToken = getCookieValue("csrf_token");
+
+    if (csrfToken) {
+      /**
+       * CSRFトークンをHeaderへ設定する.
+       *
+       * サーバー側では:
+       * Cookie csrf_token
+       * Header X-CSRF-Token
+       * の一致を検証する.
+       */
+      config.headers.set("X-CSRF-Token", csrfToken);
+    }
+  }
+
+  return config;
+});
